@@ -37,9 +37,27 @@ public class CloudinaryServiceImpl implements ICloudinaryService {
      public List<String> uploadFiles(List<MultipartFile> files) throws IOException {
         List<String> fileUrls = new ArrayList<>();
         for (MultipartFile file : files) {
-            String fileUrl = uploadFile(file);
-            fileUrls.add(fileUrl);
+            try {
+                System.out.println("Uploading file: " + file.getOriginalFilename() + 
+                                " (size: " + file.getSize() + " bytes)");
+                String fileUrl = uploadFile(file);
+                fileUrls.add(fileUrl);
+                System.out.println("Successfully uploaded: " + fileUrl);
+            } catch (Exception e) {
+                System.out.println("ERROR uploading file " + file.getOriginalFilename() + ": " + e.getMessage());
+                throw e;
+            }
         }
         return fileUrls;
     }
+
+    public String uploadBytes(byte[] data, String filename) throws IOException {
+        Map uploadResult = cloudinary.uploader().upload(data, ObjectUtils.asMap(
+            "folder", "pawfund",
+            "public_id", filename
+        ));
+        return uploadResult.get("secure_url").toString();
+    }
+    
+   
 } 

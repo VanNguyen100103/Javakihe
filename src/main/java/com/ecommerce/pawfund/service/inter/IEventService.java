@@ -1,6 +1,7 @@
 package com.ecommerce.pawfund.service.inter;
 
 import com.ecommerce.pawfund.entity.Event;
+import com.ecommerce.pawfund.dto.EventDTO;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,4 +11,11 @@ public interface IEventService {
     Event save(Event event);
     void deleteById(Long id);
     List<Event> findByShelterId(Long shelterId);
+    
+    // New methods for DTO
+    List<EventDTO> findAllAsDTO();
+    Optional<EventDTO> findByIdAsDTO(Long id);
+    List<EventDTO> findByShelterIdAsDTO(Long shelterId);
+    EventDTO convertToDTO(Event event);
+    EventDTO saveAsDTO(Event event);
 } 

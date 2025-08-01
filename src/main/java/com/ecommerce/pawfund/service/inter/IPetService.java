@@ -14,5 +14,5 @@ public interface IPetService {
     List<Pet> findByBreed(String breed);
     List<Pet> findByStatus(Pet.Status status);
     List<Pet> findByLocation(String location);
-    Page<Pet> findByFilterAndSearch(String status, String breed, String search, Integer age, String location, Integer ageMin, Integer ageMax, Pageable pageable);
+    Page<Pet> findByFilterAndSearch(String status, String breed, String search, Integer age, String location, Integer ageMin, Integer ageMax, String gender, Pageable pageable);
 } 

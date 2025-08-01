@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfigurationSource;
+
 
 @Configuration
 @EnableWebSecurity
@@ -24,15 +26,21 @@ public class SecurityConfig {
     private UserDetailsService userDetailsService;
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+        http.cors().configurationSource(corsConfigurationSource)
+            .and()
+            .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeHttpRequests()
@@ -40,8 +48,15 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/", "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/", "/api/users/*", "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pets", "/api/pets/", "/api/pets/*", "/api/pets/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/pets", "/api/pets/", "/api/pets/*", "/api/pets/**").permitAll()
+
+                .requestMatchers(HttpMethod.POST, "/api/pets/upload-images/*").permitAll()
+        
+                .requestMatchers(HttpMethod.GET, "/api/events", "/api/events/", "/api/events/*", "/api/events/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/guest-cart/**").permitAll() // Cho phép guest-cart
+                .requestMatchers("/api/test/**").permitAll() // Cho phép test endpoints
+                .requestMatchers(HttpMethod.POST, "/api/test/**").permitAll() // Cho phép POST test endpoints
                 .anyRequest().authenticated()
             .and()
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -55,4 +70,6 @@ public class SecurityConfig {
                 .passwordEncoder(passwordEncoder())
                 .and().build();
     }
+
+ 
 } 

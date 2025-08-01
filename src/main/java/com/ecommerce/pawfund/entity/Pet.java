@@ -14,11 +14,18 @@ public class Pet {
     private Integer age;
     private String breed;
     private String description;
+    @Column(length = 1000)
     private String imageUrls; // Lưu "url1,url2,url3"
     private String location;
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    private Boolean vaccinated;
+    private Boolean dewormed;
 
     @ManyToOne
     @JoinColumn(name = "shelter_id")
@@ -26,6 +33,10 @@ public class Pet {
 
     public enum Status {
         AVAILABLE, ADOPTED, PENDING
+    }
+
+    public enum Gender {
+        MALE, FEMALE
     }
 
     // Getters, setters, constructors
@@ -52,6 +63,15 @@ public class Pet {
 
     public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
+
+    public Gender getGender() { return gender; }
+    public void setGender(Gender gender) { this.gender = gender; }
+
+    public Boolean getVaccinated() { return vaccinated; }
+    public void setVaccinated(Boolean vaccinated) { this.vaccinated = vaccinated; }
+
+    public Boolean getDewormed() { return dewormed; }
+    public void setDewormed(Boolean dewormed) { this.dewormed = dewormed; }
 
     public User getShelter() { return shelter; }
     public void setShelter(User shelter) { this.shelter = shelter; }

@@ -19,6 +19,9 @@ public class Donation {
 
     private Double amount;
     private String method; // e.g., PAYPAL
+    private String currency; // e.g., USD, VND
+    private String status; // e.g., completed, pending, failed
+    private String paymentMethod; // e.g., paypal (from frontend)
     private LocalDateTime donatedAt;
 
     // Getters, setters, constructors
@@ -32,6 +35,12 @@ public class Donation {
     public void setAmount(Double amount) { this.amount = amount; }
     public String getMethod() { return method; }
     public void setMethod(String method) { this.method = method; }
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
     public LocalDateTime getDonatedAt() { return donatedAt; }
     public void setDonatedAt(LocalDateTime donatedAt) { this.donatedAt = donatedAt; }
 } 

@@ -56,7 +56,7 @@ public class PetServiceImpl implements IPetService {
     }
 
     @Override
-    public Page<Pet> findByFilterAndSearch(String status, String breed, String search, Integer age, String location, Integer ageMin, Integer ageMax, Pageable pageable) {
+    public Page<Pet> findByFilterAndSearch(String status, String breed, String search, Integer age, String location, Integer ageMin, Integer ageMax, String gender, Pageable pageable) {
         List<Pet> all = petRepository.findAll();
         Stream<Pet> stream = all.stream();
 
@@ -83,6 +83,9 @@ public class PetServiceImpl implements IPetService {
         }
         if (ageMax != null) {
             stream = stream.filter(p -> p.getAge() != null && p.getAge() <= ageMax);
+        }
+        if (gender != null) {
+            stream = stream.filter(p -> p.getGender() != null && p.getGender().name().equalsIgnoreCase(gender));
         }
         List<Pet> filtered = stream.collect(Collectors.toList());
 

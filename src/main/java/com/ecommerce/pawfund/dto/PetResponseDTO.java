@@ -9,6 +9,9 @@ public class PetResponseDTO {
     private String breed;
     private String location;
     private String status;
+    private String gender;
+    private Boolean vaccinated;
+    private Boolean dewormed;
     private ShelterDTO shelter;
 
     // Getter/setter
@@ -28,6 +31,12 @@ public class PetResponseDTO {
     public void setLocation(String location) { this.location = location; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+    public Boolean getVaccinated() { return vaccinated; }
+    public void setVaccinated(Boolean vaccinated) { this.vaccinated = vaccinated; }
+    public Boolean getDewormed() { return dewormed; }
+    public void setDewormed(Boolean dewormed) { this.dewormed = dewormed; }
     public ShelterDTO getShelter() { return shelter; }
     public void setShelter(ShelterDTO shelter) { this.shelter = shelter; }
 } 

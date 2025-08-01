@@ -7,4 +7,6 @@ import java.util.List;
 public interface ICloudinaryService {
     String uploadFile(MultipartFile file) throws IOException;
     List<String> uploadFiles(List<MultipartFile> files) throws IOException;
+    String uploadBytes(byte[] data, String filename) throws IOException;
+    
 } 

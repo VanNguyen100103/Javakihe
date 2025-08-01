@@ -52,7 +52,7 @@ public class AuthController {
     // Đơn giản: refresh token là 1 JWT khác với thời gian sống dài hơn
     private final Map<String, String> refreshTokenStore = new HashMap<>(); // user -> refreshToken
 
-    @PostMapping(value = "/login", consumes = {"application/json", "application/x-www-form-urlencoded"})
+    @PostMapping(value = "/login", consumes = {"application/json", "application/x-www-form-urlencoded", "multipart/form-data"})
     @Transactional
     public ResponseEntity<?> login(@ModelAttribute AuthRequest request) {
         try {
@@ -60,12 +60,19 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String accessToken = jwtUtil.generateToken(userDetails.getUsername());
-            String refreshToken = jwtUtil.generateRefreshToken(userDetails.getUsername());
-            // Lưu refresh token vào DB
+            
+            // Kiểm tra user có tồn tại và enabled không
             Optional<User> userOpt = userRepository.findByUsername(userDetails.getUsername());
             if (userOpt.isEmpty()) return ResponseEntity.status(401).body("User not found");
             User user = userOpt.get();
+            
+            // Kiểm tra tài khoản đã được kích hoạt chưa
+            if (!user.isEnabled()) {
+                return ResponseEntity.status(403).body("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để xác thực.");
+            }
+            
+            String accessToken = jwtUtil.generateToken(userDetails.getUsername());
+            String refreshToken = jwtUtil.generateRefreshToken(userDetails.getUsername());
             // Kiểm tra khóa tài khoản nếu không hoạt động lâu ngày (trừ ADMIN)
             if (user.getRole() != User.Role.ADMIN && user.getLastLogin() != null &&
                 user.getLastLogin().isBefore(java.time.LocalDateTime.now().minusDays(180))) {
@@ -79,12 +86,13 @@ public class AuthController {
             result.put("accessToken", accessToken);
             result.put("refreshToken", refreshToken);
             Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", user.getId()); // Add user ID
             userInfo.put("username", user.getUsername());
             userInfo.put("email", user.getEmail());
-            userInfo.put("fullname", user.getFullName());
+            userInfo.put("fullName", user.getFullName());
             userInfo.put("phone", user.getPhone());
             userInfo.put("address", user.getAddress());
-            // KHÔNG trả về id, role
+            userInfo.put("role", user.getRole().name()); // Thêm role
             result.put("user", userInfo);
 
             return ResponseEntity.ok(result);
@@ -111,8 +119,8 @@ public class AuthController {
         return ResponseEntity.ok(tokens);
     }
 
-    @PostMapping(value = "/register", consumes = {"application/json", "application/x-www-form-urlencoded"})
-    public ResponseEntity<?> register(@ModelAttribute RegisterRequest request) {
+    @PostMapping(value = "/register", consumes = {"application/json", "application/x-www-form-urlencoded", "multipart/form-data"})
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
@@ -127,7 +135,7 @@ public class AuthController {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
-        user.setFullName(request.getFullname());
+        user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
         user.setAddress(request.getAddress());
         user.setEnabled(false); // Chưa xác thực email

@@ -112,24 +112,53 @@ public class GuestCartController {
         }
     }
 
+    // Xóa pet khỏi guest cart
+    @DeleteMapping("/remove")
+    public ResponseEntity<?> removeFromCart(
+        @RequestParam("token") String token,
+        @RequestParam("petId") Long petId
+    ) {
+        Optional<GuestCart> cartOpt = guestCartRepository.findById(token);
+        if (cartOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Cart not found");
+        }
+        
+        GuestCart cart = cartOpt.get();
+        cart.getPetIds().remove(petId);
+        cart.setUpdatedAt(LocalDateTime.now());
+        guestCartRepository.save(cart);
+        
+        return ResponseEntity.ok(toGuestCartResponseDTO(cart));
+    }
+
     // Lấy cart của user đã đăng nhập
     @GetMapping("/user-cart")
     public ResponseEntity<?> getUserCart(Authentication authentication) {
+        System.out.println("=== getUserCart called ===");
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(String.valueOf(authentication.getPrincipal()))) {
+            System.out.println("User not authenticated");
             return ResponseEntity.status(401).body("User not authenticated");
         }
         String username = authentication.getName();
+        System.out.println("Username: " + username);
         Optional<User> userOpt = userRepository.findByUsername(username);
-        if (userOpt.isEmpty()) return ResponseEntity.status(401).body("User not found");
+        if (userOpt.isEmpty()) {
+            System.out.println("User not found");
+            return ResponseEntity.status(401).body("User not found");
+        }
         User user = userOpt.get();
+        System.out.println("User ID: " + user.getId());
         UserCart userCart = userCartRepository.findByUserId(user.getId()).orElse(null);
         if (userCart == null || userCart.getPetIds().isEmpty()) {
+            System.out.println("User cart is null or empty");
             return ResponseEntity.ok(Collections.emptyList());
         }
+        System.out.println("User cart pet IDs: " + userCart.getPetIds());
         List<PetResponseDTO> pets = new ArrayList<>();
         for (Long petId : userCart.getPetIds()) {
             petService.findById(petId).ifPresent(pet -> pets.add(toPetResponseDTO(pet)));
         }
+        System.out.println("Returning " + pets.size() + " pets");
         return ResponseEntity.ok(pets);
     }
 
@@ -163,9 +192,72 @@ public class GuestCartController {
         userCart.setUpdatedAt(LocalDateTime.now());
         userCartRepository.save(userCart);
 
+        // Trả về danh sách pet đã merge
+        List<PetResponseDTO> pets = new ArrayList<>();
+        for (Long id : userCart.getPetIds()) {
+            petService.findById(id).ifPresent(pet -> pets.add(toPetResponseDTO(pet)));
+        }
+
         guestCartRepository.deleteById(token);
 
-        return ResponseEntity.ok("Merged guest cart into user cart!");
+        // Trả về pets data thay vì string message
+        Map<String, Object> response = new HashMap<>();
+        response.put("userId", user.getId());
+        response.put("pets", pets);
+        return ResponseEntity.ok(response);
+    }
+
+    // Xóa item khỏi user cart
+    @DeleteMapping("/user-cart/remove")
+    public ResponseEntity<?> removeFromUserCart(
+        @RequestParam("petId") Long petId,
+        Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(String.valueOf(authentication.getPrincipal()))) {
+            return ResponseEntity.status(401).body("User not authenticated");
+        }
+        
+        String username = authentication.getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) return ResponseEntity.status(401).body("User not found");
+        
+        User user = userOpt.get();
+        UserCart userCart = userCartRepository.findByUserId(user.getId()).orElse(null);
+        if (userCart == null) return ResponseEntity.badRequest().body("Cart not found");
+        
+        userCart.getPetIds().remove(petId);
+        userCart.setUpdatedAt(LocalDateTime.now());
+        userCartRepository.save(userCart);
+        
+        // Trả về danh sách pet còn lại trong cart
+        List<PetResponseDTO> pets = new ArrayList<>();
+        for (Long id : userCart.getPetIds()) {
+            petService.findById(id).ifPresent(pet -> pets.add(toPetResponseDTO(pet)));
+        }
+        
+        return ResponseEntity.ok(pets);
+    }
+
+    // Xóa tất cả items trong user cart
+    @DeleteMapping("/user-cart/clear")
+    public ResponseEntity<?> clearUserCart(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(String.valueOf(authentication.getPrincipal()))) {
+            return ResponseEntity.status(401).body("User not authenticated");
+        }
+        
+        String username = authentication.getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) return ResponseEntity.status(401).body("User not found");
+        
+        User user = userOpt.get();
+        UserCart userCart = userCartRepository.findByUserId(user.getId()).orElse(null);
+        if (userCart == null) return ResponseEntity.ok("Cart already empty");
+        
+        userCart.getPetIds().clear();
+        userCart.setUpdatedAt(LocalDateTime.now());
+        userCartRepository.save(userCart);
+        
+        return ResponseEntity.ok("Cart cleared successfully");
     }
 
     // Helper chuyển Pet sang PetResponseDTO (tái sử dụng logic từ PetController)
