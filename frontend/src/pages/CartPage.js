@@ -13,17 +13,12 @@ import { Link } from 'react-router-dom';
 const CartPage = () => {
   const dispatch = useAppDispatch();
   const { userCart, guestCart, isLoading } = useCart();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, user } = useAuthContext();
   const [isUpdating, setIsUpdating] = useState(false);
   const [updatingItemId, setUpdatingItemId] = useState(null);
-  const [showAdoptionForm, setShowAdoptionForm] = useState(false);
   const [showTestModal, setShowTestModal] = useState(false);
   const [testResult, setTestResult] = useState(null);
-  const [adoptionData, setAdoptionData] = useState({
-    message: '',
-    phone: '',
-    address: ''
-  });
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   useEffect(() => {
     console.log('=== CartPage useEffect ===');
@@ -193,33 +188,65 @@ const CartPage = () => {
       // Chưa làm bài test, hiển thị modal test
       setShowTestModal(true);
     } else {
-      // Đã có kết quả test, hiển thị form nhận nuôi
-      setShowAdoptionForm(true);
+      // Đã có kết quả test, hiển thị modal xác nhận
+      setShowConfirmationModal(true);
     }
   };
 
   const handleTestComplete = (result) => {
     setTestResult(result);
-    // Sau khi hoàn thành test, hiển thị form nhận nuôi
-    setShowAdoptionForm(true);
+    // Sau khi hoàn thành test, chỉ hiển thị kết quả, không tự động submit
+    setShowTestModal(false);
   };
 
-  const handleAdoptFromCart = async () => {
-    if (!adoptionData.message || !adoptionData.phone || !adoptionData.address) {
-      toast.error('Vui lòng điền đầy đủ thông tin!');
-      return;
-    }
-
+  const handleDirectAdoption = async () => {
     try {
-      await dispatch(adoptFromCart(adoptionData)).unwrap();
-      toast.success('Đã gửi đơn nhận nuôi thành công!');
-      setShowAdoptionForm(false);
-      setAdoptionData({ message: '', phone: '', address: '' });
-      setTestResult(null);
+      // Lấy thông tin user từ context hoặc localStorage
+      let userInfo = user;
+      
+      if (!userInfo) {
+        // Fallback to localStorage
+        const userFromStorage = localStorage.getItem('user');
+        if (userFromStorage) {
+          userInfo = JSON.parse(userFromStorage);
+        }
+      }
+      
+      const adoptionData = {
+        message: `Tôi muốn nhận nuôi thú cưng này. Tôi đã hoàn thành bài test với điểm số tốt và cam kết sẽ chăm sóc thú cưng một cách chu đáo.`
+        // Removed phone and address - can be retrieved from user object
+      };
+
+      console.log('=== Direct adoption with user data ===', adoptionData);
+      console.log('=== Adoption data message ===', adoptionData.message);
+      console.log('User info:', userInfo);
+      
+      const result = await dispatch(adoptFromCart(adoptionData)).unwrap();
+      console.log('=== Direct adoption result ===', result);
+      
+      toast.success('Đã gửi đơn nhận nuôi thành công! Đơn đang chờ xét duyệt bởi admin/shelter.');
+      
       // Clear cart after successful adoption
       await dispatch(clearCart()).unwrap();
+      
+      // Refresh cart data
+      if (isAuthenticated) {
+        dispatch(fetchUserCart());
+      } else {
+        const guestToken = localStorage.getItem('guestCartToken');
+        if (guestToken) {
+          dispatch(fetchGuestCart(guestToken));
+        }
+      }
+      
     } catch (error) {
-      toast.error(error || 'Gửi đơn nhận nuôi thất bại!');
+      console.error('=== Direct adoption error ===', error);
+      console.error('=== Error details ===', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status
+      });
+      toast.error('Gửi đơn nhận nuôi thất bại!');
     }
   };
 
@@ -401,7 +428,7 @@ const CartPage = () => {
                     className="w-full bg-primary-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-primary-600 transition-all duration-300 transform hover:scale-105"
                     onClick={handleStartAdoption}
                   >
-                    {testResult ? 'Tiến hành nhận nuôi' : 'Làm bài test nhận nuôi'}
+                    {testResult ? 'Gửi đơn nhận nuôi' : 'Làm bài test nhận nuôi'}
                   </button>
                 )}
               </div>
@@ -416,66 +443,65 @@ const CartPage = () => {
           onTestComplete={handleTestComplete}
         />
 
-        {/* Adoption Form Modal */}
-        {showAdoptionForm && (
+        {/* Confirmation Modal */}
+        {showConfirmationModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">Thông tin nhận nuôi</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Lý do nhận nuôi *
-                  </label>
-                  <textarea
-                    value={adoptionData.message}
-                    onChange={(e) => setAdoptionData({...adoptionData, message: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    rows="4"
-                    placeholder="Hãy chia sẻ lý do bạn muốn nhận nuôi thú cưng này..."
-                  />
+              <div className="text-center">
+                <div className="text-6xl mb-4">📋</div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  Xác nhận gửi đơn nhận nuôi
+                </h3>
+                
+                <div className="mb-6 text-left">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-green-500">✓</span>
+                      <span className="font-medium text-green-800">Bài test đã hoàn thành</span>
+                    </div>
+                    <p className="text-sm text-green-700">
+                      Điểm: {testResult?.score}/100 
+                      {testResult?.score >= 70 ? ' (Đủ điều kiện nhận nuôi)' : ' (Cần cải thiện)'}
+                    </p>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600 mb-4">
+                    <p><strong>Thú cưng trong giỏ hàng:</strong></p>
+                    <ul className="mt-2 space-y-1">
+                      {cartItems.map((item, index) => (
+                        <li key={index} className="flex items-center gap-2">
+                          <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
+                          {item.pet?.name} ({item.pet?.breed})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600">
+                    <p><strong>Thông tin đơn:</strong></p>
+                    <p>• Lý do: Đơn nhận nuôi từ {user?.fullname || user?.username || 'Người dùng'}</p>
+                    <p>• Số điện thoại: {user?.phone || 'Không có'}</p>
+                    <p>• Địa chỉ: {user?.address || 'Không có'}</p>
+                  </div>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Số điện thoại *
-                  </label>
-                  <input
-                    type="tel"
-                    value={adoptionData.phone}
-                    onChange={(e) => setAdoptionData({...adoptionData, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="0123456789"
-                  />
+                
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setShowConfirmationModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowConfirmationModal(false);
+                      handleDirectAdoption();
+                    }}
+                    className="flex-1 px-4 py-2 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors duration-300"
+                  >
+                    Gửi đơn
+                  </button>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Địa chỉ *
-                  </label>
-                  <input
-                    type="text"
-                    value={adoptionData.address}
-                    onChange={(e) => setAdoptionData({...adoptionData, address: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="123 Đường ABC, Quận 1, TP.HCM"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-8">
-                <button
-                  onClick={() => setShowAdoptionForm(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-300"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleAdoptFromCart}
-                  className="flex-1 px-4 py-2 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors duration-300"
-                >
-                  Gửi đơn
-                </button>
               </div>
             </div>
           </div>

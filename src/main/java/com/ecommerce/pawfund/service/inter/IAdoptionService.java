@@ -11,4 +11,9 @@ public interface IAdoptionService {
     void deleteById(Long id);
     List<Adoption> findByUserId(Long userId);
     List<Adoption> findByPetId(Long petId);
+    List<Adoption> getAdoptionsByUserId(Long userId);
+    
+    // Admin/Shelter methods
+    List<Adoption> getAllAdoptions();
+    Adoption updateAdoptionStatus(Long adoptionId, String status, String adminNotes, String shelterNotes);
 } 

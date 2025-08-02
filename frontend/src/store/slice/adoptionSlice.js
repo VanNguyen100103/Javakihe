@@ -1,10 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { 
     fetchAdoptions, 
+    fetchAllAdoptions,
     createAdoption, 
     adoptFromCart,
     submitAdoptionTest,
     updateAdoption, 
+    updateAdoptionStatus,
     deleteAdoption 
 } from '../asyncAction/adoptionAsyncAction';
 
@@ -31,7 +33,7 @@ const adoptionSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        // Fetch adoptions
+        // Fetch adoptions (user's adoptions)
         builder.addCase(fetchAdoptions.pending, (state) => {
             state.isLoading = true;
             state.error = null;
@@ -41,6 +43,20 @@ const adoptionSlice = createSlice({
             state.adoptions = action.payload;
         });
         builder.addCase(fetchAdoptions.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.payload;
+        });
+
+        // Fetch all adoptions (for admin/shelter)
+        builder.addCase(fetchAllAdoptions.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(fetchAllAdoptions.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.adoptions = action.payload;
+        });
+        builder.addCase(fetchAllAdoptions.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.payload;
         });
@@ -60,17 +76,69 @@ const adoptionSlice = createSlice({
             state.error = action.payload;
         });
 
+        // Update adoption status (for admin/shelter)
+        builder.addCase(updateAdoptionStatus.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(updateAdoptionStatus.fulfilled, (state, action) => {
+            console.log('=== updateAdoptionStatus.fulfilled ===');
+            console.log('action.payload:', action.payload);
+            console.log('typeof action.payload:', typeof action.payload);
+            
+            state.isLoading = false;
+            
+            // Check if payload exists and has id
+            if (action.payload && action.payload.id) {
+                const index = state.adoptions.findIndex(adoption => adoption.id === action.payload.id);
+                console.log('Found adoption at index:', index);
+                if (index !== -1) {
+                    state.adoptions[index] = action.payload;
+                    console.log('Updated adoption in state');
+                } else {
+                    console.log('Adoption not found in state, adding to list');
+                    state.adoptions.push(action.payload);
+                }
+                state.message = 'Cập nhật trạng thái đơn nhận nuôi thành công!';
+            } else {
+                console.error('Invalid payload in updateAdoptionStatus.fulfilled:', action.payload);
+                state.error = 'Dữ liệu cập nhật không hợp lệ!';
+            }
+        });
+        builder.addCase(updateAdoptionStatus.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.payload;
+        });
+
         // Adopt from cart
         builder.addCase(adoptFromCart.pending, (state) => {
             state.isLoading = true;
             state.error = null;
         });
         builder.addCase(adoptFromCart.fulfilled, (state, action) => {
+            console.log('=== adoptFromCart.fulfilled ===');
+            console.log('action.payload:', action.payload);
+            console.log('typeof action.payload:', typeof action.payload);
+            console.log('Array.isArray(action.payload):', Array.isArray(action.payload));
+            
             state.isLoading = false;
-            state.adoptions.push(...action.payload);
+            
+            // Handle payload correctly - could be array or single object
+            if (Array.isArray(action.payload)) {
+                console.log('Payload is array, length:', action.payload.length);
+                state.adoptions.push(...action.payload);
+            } else if (action.payload) {
+                console.log('Payload is single object');
+                state.adoptions.push(action.payload);
+            } else {
+                console.log('Payload is null/undefined');
+            }
+            
             state.message = 'Đã gửi đơn nhận nuôi từ giỏ hàng thành công!';
         });
         builder.addCase(adoptFromCart.rejected, (state, action) => {
+            console.log('=== adoptFromCart.rejected ===');
+            console.log('action.payload:', action.payload);
             state.isLoading = false;
             state.error = action.payload;
         });

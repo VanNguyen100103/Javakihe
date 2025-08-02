@@ -67,8 +67,8 @@ public class PayPalServiceImpl implements IPayPalService {
         requestBody.put("intent", "CAPTURE");
         
         Map<String, Object> applicationContext = new HashMap<>();
-        applicationContext.put("return_url", "https://pawfund.org/donation/success");
-        applicationContext.put("cancel_url", "https://pawfund.org/donation/cancel");
+        applicationContext.put("return_url", "http://localhost:8888/api/donations/success");
+        applicationContext.put("cancel_url", "http://localhost:8888/api/donations/cancel");
         requestBody.put("application_context", applicationContext);
         
         List<Map<String, Object>> purchaseUnits = new ArrayList<>();

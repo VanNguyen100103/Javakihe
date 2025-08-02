@@ -53,5 +53,10 @@ export const donationAPI = {
     // Verify PayPal payment
     verifyPayPalPayment: async (paymentData) => {
         return api.post('/donations/paypal/verify', paymentData);
+    },
+
+    // Get donation statistics (Admin only)
+    getDonationStatistics: async () => {
+        return api.get('/donations/statistics');
     }
 }; 

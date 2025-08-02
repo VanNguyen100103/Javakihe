@@ -487,6 +487,63 @@ public class PetController {
         return ResponseEntity.notFound().build();
     }
 
+    // Get pet statistics - Admin only
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getPetStats() {
+        try {
+            List<Pet> allPets = petService.findAll();
+            
+            // Calculate statistics
+            long totalPets = allPets.size();
+            long availablePets = allPets.stream()
+                .filter(pet -> Pet.Status.AVAILABLE.equals(pet.getStatus()))
+                .count();
+            long adoptedPets = allPets.stream()
+                .filter(pet -> Pet.Status.ADOPTED.equals(pet.getStatus()))
+                .count();
+            long pendingPets = allPets.stream()
+                .filter(pet -> Pet.Status.PENDING.equals(pet.getStatus()))
+                .count();
+            
+            // Count by gender
+            long malePets = allPets.stream()
+                .filter(pet -> Pet.Gender.MALE.equals(pet.getGender()))
+                .count();
+            long femalePets = allPets.stream()
+                .filter(pet -> Pet.Gender.FEMALE.equals(pet.getGender()))
+                .count();
+            
+            // Count by age groups
+            long youngPets = allPets.stream()
+                .filter(pet -> pet.getAge() != null && pet.getAge() <= 2)
+                .count();
+            long adultPets = allPets.stream()
+                .filter(pet -> pet.getAge() != null && pet.getAge() > 2 && pet.getAge() <= 7)
+                .count();
+            long seniorPets = allPets.stream()
+                .filter(pet -> pet.getAge() != null && pet.getAge() > 7)
+                .count();
+            
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalPets", totalPets);
+            stats.put("availablePets", availablePets);
+            stats.put("adoptedPets", adoptedPets);
+            stats.put("pendingPets", pendingPets);
+            stats.put("malePets", malePets);
+            stats.put("femalePets", femalePets);
+            stats.put("youngPets", youngPets);
+            stats.put("adultPets", adultPets);
+            stats.put("seniorPets", seniorPets);
+            
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Failed to get pet statistics: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
     private boolean hasRole(Authentication authentication, String... roles) {
         if (authentication == null || authentication.getAuthorities() == null) return false;
         for (String role : roles) {

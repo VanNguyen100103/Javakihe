@@ -23,6 +23,7 @@ public class Donation {
     private String status; // e.g., completed, pending, failed
     private String paymentMethod; // e.g., paypal (from frontend)
     private LocalDateTime donatedAt;
+    private String transactionId; // PayPal transaction ID
 
     // Getters, setters, constructors
     public Long getId() { return id; }
@@ -43,4 +44,6 @@ public class Donation {
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
     public LocalDateTime getDonatedAt() { return donatedAt; }
     public void setDonatedAt(LocalDateTime donatedAt) { this.donatedAt = donatedAt; }
+    public String getTransactionId() { return transactionId; }
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
 } 

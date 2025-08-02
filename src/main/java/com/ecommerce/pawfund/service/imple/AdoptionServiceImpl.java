@@ -43,4 +43,43 @@ public class AdoptionServiceImpl implements IAdoptionService {
     public List<Adoption> findByPetId(Long petId) {
         return adoptionRepository.findByPetId(petId);
     }
+
+    @Override
+    public List<Adoption> getAdoptionsByUserId(Long userId) {
+        return adoptionRepository.findByUserId(userId);
+    }
+    
+    @Override
+    public List<Adoption> getAllAdoptions() {
+        return adoptionRepository.findAll();
+    }
+    
+    @Override
+    public Adoption updateAdoptionStatus(Long adoptionId, String status, String adminNotes, String shelterNotes) {
+        System.out.println("=== updateAdoptionStatus service called ===");
+        System.out.println("adoptionId: " + adoptionId);
+        System.out.println("status: " + status);
+        System.out.println("adminNotes: " + adminNotes);
+        System.out.println("shelterNotes: " + shelterNotes);
+        
+        Adoption adoption = adoptionRepository.findById(adoptionId)
+                .orElseThrow(() -> new RuntimeException("Adoption not found"));
+        
+        System.out.println("=== Found adoption: " + adoption.getId() + " with current status: " + adoption.getStatus() + " ===");
+        
+        adoption.setStatus(Adoption.Status.valueOf(status.toUpperCase()));
+        
+        if (adminNotes != null && !adminNotes.trim().isEmpty()) {
+            adoption.setAdminNotes(adminNotes);
+        }
+        
+        if (shelterNotes != null && !shelterNotes.trim().isEmpty()) {
+            adoption.setShelterNotes(shelterNotes);
+        }
+        
+        Adoption saved = adoptionRepository.save(adoption);
+        System.out.println("=== Saved adoption with new status: " + saved.getStatus() + " ===");
+        
+        return saved;
+    }
 } 

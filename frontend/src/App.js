@@ -27,6 +27,7 @@ import DashboardPage from './pages/admin/DashboardPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import PetManagementPage from './pages/admin/PetManagementPage';
 import EventManagementPage from './pages/admin/EventManagementPage';
+import AdoptionManagementPage from './pages/admin/AdoptionManagementPage';
 
 // Shelter pages
 import ShelterDashboardPage from './pages/shelter/ShelterDashboardPage';
@@ -34,6 +35,7 @@ import ShelterUserManagementPage from './pages/shelter/ShelterUserManagementPage
 import AddPetPage from './pages/shelter/AddPetPage';
 import ShelterPetManagementPage from './pages/shelter/PetManagementPage';
 import ShelterEventsPage from './pages/shelter/ShelterEventsPage';
+import ShelterAdoptionManagementPage from './pages/shelter/AdoptionManagementPage';
 import VolunteerEventsPage from './pages/volunteer/VolunteerEventsPage';
 
 // Route components
@@ -118,12 +120,7 @@ function App() {
               } />
               <Route path="/admin/adoptions" element={
                 <RoleRoute allowedRoles={['ADMIN']} requiredPermissions={['manage_adoptions']}>
-                  <div className="py-8">
-                    <div className="max-w-7xl mx-auto px-4">
-                      <h1 className="text-3xl font-bold text-secondary-800 mb-4">Quản lý nhận nuôi</h1>
-                      <p className="text-secondary-600">Trang quản lý nhận nuôi (đang phát triển)</p>
-                    </div>
-                  </div>
+                  <AdoptionManagementPage />
                 </RoleRoute>
               } />
               <Route path="/admin/settings" element={
@@ -160,12 +157,7 @@ function App() {
               } />
               <Route path="/shelter/adoptions" element={
                 <RoleRoute allowedRoles={['SHELTER']} requiredPermissions={['manage_adoptions']}>
-                  <div className="py-8">
-                    <div className="max-w-7xl mx-auto px-4">
-                      <h1 className="text-3xl font-bold text-secondary-800 mb-4">Duyệt đơn nhận nuôi</h1>
-                      <p className="text-secondary-600">Trang duyệt đơn nhận nuôi (đang phát triển)</p>
-                    </div>
-                  </div>
+                  <ShelterAdoptionManagementPage />
                 </RoleRoute>
               } />
               <Route path="/shelter/events" element={

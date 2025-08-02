@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.ecommerce.pawfund.repository.UserRepository;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/donations")
@@ -99,6 +100,61 @@ public class DonationController {
         return ResponseEntity.notFound().build();
     }
 
+    // Donation statistics endpoint - Admin only
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Object>> getDonationStatistics() {
+        try {
+            System.out.println("=== getDonationStatistics called ===");
+            List<Donation> allDonations = donationService.findAll();
+            System.out.println("=== Found " + allDonations.size() + " donations ===");
+            
+            // Calculate statistics
+            long totalDonations = allDonations.size();
+            double totalAmount = allDonations.stream()
+                .mapToDouble(donation -> donation.getAmount() != null ? donation.getAmount() : 0.0)
+                .sum();
+            
+            // Count unique donors
+            long uniqueDonors = allDonations.stream()
+                .filter(donation -> donation.getUser() != null)
+                .map(donation -> donation.getUser().getId())
+                .distinct()
+                .count();
+            
+            // Calculate this month's donations
+            java.time.LocalDateTime startOfMonth = java.time.LocalDateTime.now()
+                .withDayOfMonth(1)
+                .withHour(0)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0);
+            
+            double thisMonthAmount = allDonations.stream()
+                .filter(donation -> donation.getDonatedAt() != null && 
+                        donation.getDonatedAt().isAfter(startOfMonth))
+                .mapToDouble(donation -> donation.getAmount() != null ? donation.getAmount() : 0.0)
+                .sum();
+            
+            Map<String, Object> statistics = new HashMap<>();
+            statistics.put("totalDonations", totalDonations);
+            statistics.put("totalAmount", totalAmount);
+            statistics.put("uniqueDonors", uniqueDonors);
+            statistics.put("thisMonthAmount", thisMonthAmount);
+            statistics.put("monthlyGoal", 50000000.0); // 50,000,000 VND goal
+            statistics.put("progressPercentage", (thisMonthAmount / 50000000.0) * 100);
+            
+            System.out.println("=== Returning statistics: " + statistics + " ===");
+            return ResponseEntity.ok(statistics);
+        } catch (Exception e) {
+            System.err.println("=== Error in getDonationStatistics: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Failed to get donation statistics: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
     // PayPal endpoints
     @GetMapping("/paypal/client-id")
     public ResponseEntity<Map<String, String>> getPayPalClientId() {
@@ -133,5 +189,64 @@ public class DonationController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    // PayPal callback endpoints
+    @GetMapping("/success")
+    public ResponseEntity<Map<String, Object>> handlePayPalSuccess(
+            @RequestParam("token") String token,
+            @RequestParam("PayerID") String payerId,
+            @RequestParam(value = "amount", required = false) String amount) {
+        try {
+            // Capture the payment using the token
+            Map<String, Object> captureResult = payPalService.capturePayment(token);
+            
+            // Create donation record
+            Donation donation = new Donation();
+            // Use amount from request parameter or default to 0
+            if (amount != null && !amount.isEmpty()) {
+                donation.setAmount(Double.parseDouble(amount));
+            } else {
+                donation.setAmount(0.0); // Default amount if not provided
+            }
+            donation.setMethod("PayPal");
+            donation.setPaymentMethod("PayPal");
+            donation.setStatus("COMPLETED");
+            donation.setTransactionId((String) captureResult.get("transactionId"));
+            donation.setDonatedAt(java.time.LocalDateTime.now());
+            
+            // Save the donation
+            Donation savedDonation = donationService.save(donation);
+            
+            // Send thank you email
+            if (savedDonation.getUser() != null && savedDonation.getUser().getEmail() != null) {
+                String subject = "Cảm ơn bạn đã quyên góp qua PayPal!";
+                String text = "Cảm ơn bạn đã quyên góp số tiền: " + savedDonation.getAmount() + 
+                    " USD qua PayPal. Giao dịch ID: " + savedDonation.getTransactionId() + 
+                    ". Chúng tôi rất trân trọng sự đóng góp của bạn cho các thú cưng bị bỏ rơi.";
+                notificationService.sendEmail(savedDonation.getUser().getEmail(), subject, text);
+            }
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Thanh toán thành công!");
+            response.put("donationId", savedDonation.getId());
+            response.put("transactionId", savedDonation.getTransactionId());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/cancel")
+    public ResponseEntity<Map<String, Object>> handlePayPalCancel() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", "Thanh toán đã bị hủy bởi người dùng.");
+        return ResponseEntity.ok(response);
     }
 } 

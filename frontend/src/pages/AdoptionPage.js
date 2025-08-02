@@ -8,7 +8,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const AdoptionPage = () => {
   const dispatch = useAppDispatch();
-  const { adoptions, isLoading } = useAdoption();
+  const { adoptions = [], isLoading = false } = useAdoption();
   
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -123,7 +123,7 @@ const AdoptionPage = () => {
             </button>
           </div>
 
-          {adoptions.length === 0 ? (
+          {!adoptions || adoptions.length === 0 ? (
             <div className="empty-adoptions">
               <FaHeart className="empty-icon" />
               <h3>Chưa có yêu cầu nhận nuôi</h3>
@@ -137,7 +137,7 @@ const AdoptionPage = () => {
             </div>
           ) : (
             <div className="adoptions-list">
-              {adoptions.map((adoption) => (
+              {Array.isArray(adoptions) && adoptions.map((adoption) => (
                 <div key={adoption.id} className="adoption-card">
                   <div className="adoption-header">
                     <div className="adoption-info">

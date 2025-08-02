@@ -19,6 +19,10 @@ import com.ecommerce.pawfund.entity.AdoptionTestResult;
 import com.ecommerce.pawfund.repository.AdoptionTestResultRepository;
 import com.ecommerce.pawfund.entity.UserCart;
 import com.ecommerce.pawfund.repository.UserCartRepository;
+import java.util.Map;
+import java.util.HashMap;
+import org.springframework.http.HttpStatus;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/adoptions")
@@ -74,8 +78,8 @@ public class AdoptionController {
         app.setUser(user);
         app.setPet(pet);
         app.setMessage(dto.getMessage());
-        app.setPhone(dto.getPhone());
-        app.setAddress(dto.getAddress());
+        // Removed phone and address - can be retrieved from user object
+        app.setAppliedAt(LocalDateTime.now()); // Set application timestamp
         // Duyệt tự động dựa trên điểm
         if (score >= 70) {
             app.setStatus(Adoption.Status.APPROVED);
@@ -85,18 +89,17 @@ public class AdoptionController {
         Adoption saved = adoptionService.save(app);
         // Gửi email xác nhận cho adopter
         if (saved.getUser() != null && saved.getUser().getEmail() != null) {
-            String subject = "Kết quả đơn xin nhận nuôi";
+            String subject = "Đơn xin nhận nuôi đã được gửi";
             String text = "Đơn xin nhận nuôi của bạn cho thú cưng: " + (saved.getPet() != null ? saved.getPet().getName() : "") +
-                    " đã được " + (saved.getStatus() == Adoption.Status.APPROVED ? "DUYỆT" : "TỪ CHỐI") +
-                    ". Điểm bài test của bạn: " + score + ".";
+                    " đã được gửi thành công và đang chờ xét duyệt. Điểm bài test của bạn: " + score + ".";
             notificationService.sendEmail(saved.getUser().getEmail(), subject, text);
         }
         // Gửi email thông báo cho shelter staff
         if (saved.getPet() != null && saved.getPet().getShelter() != null && saved.getPet().getShelter().getEmail() != null) {
             notificationService.sendEmail(
                 saved.getPet().getShelter().getEmail(),
-                "Có đơn xin nhận nuôi mới",
-                "Có một đơn xin nhận nuôi mới cho thú cưng: " + saved.getPet().getName() + ". Trạng thái: " + (saved.getStatus() == Adoption.Status.APPROVED ? "DUYỆT" : "TỪ CHỐI")
+                "Có đơn xin nhận nuôi mới cần xét duyệt",
+                "Có một đơn xin nhận nuôi mới cho thú cưng: " + saved.getPet().getName() + ". Vui lòng đăng nhập để xét duyệt."
             );
         }
         return saved;
@@ -105,63 +108,109 @@ public class AdoptionController {
     @PreAuthorize("hasRole('ADOPTER')")
     @PostMapping("/from-cart")
     public ResponseEntity<?> adoptFromCart(@ModelAttribute AdoptionRequestDTO dto, Authentication authentication) {
-        String username = authentication.getName();
-        User user = userService.findByUsername(username).orElse(null);
-        if (user == null) {
-            return ResponseEntity.status(401).body("User not found");
-        }
-        UserCart userCart = userCartRepository.findByUserId(user.getId()).orElse(null);
-        if (userCart == null || userCart.getPetIds().isEmpty()) {
-            return ResponseEntity.badRequest().body("Cart is empty");
-        }
-        int score = 0;
-        AdoptionTestResult testResult = adoptionTestResultRepository.findTopByUserOrderByCreatedAtDesc(user).orElse(null);
-        if (testResult != null) {
-            score = testResult.getScore();
-        }
-        List<Adoption> createdAdoptions = new java.util.ArrayList<>();
-        StringBuilder summary = new StringBuilder();
-        summary.append("Bạn đã gửi đơn xin nhận nuôi cho các thú cưng sau:\n");
-        for (Long petId : userCart.getPetIds()) {
-            Pet pet = petService.findById(petId).orElse(null);
-            if (pet == null) continue;
-            Adoption app = new Adoption();
-            app.setUser(user);
-            app.setPet(pet);
-            app.setMessage(dto.getMessage());
-            app.setPhone(dto.getPhone());
-            app.setAddress(dto.getAddress());
-            if (score >= 70) {
-                app.setStatus(Adoption.Status.APPROVED);
-            } else {
-                app.setStatus(Adoption.Status.REJECTED);
+        try {
+            System.out.println("=== adoptFromCart called ===");
+            System.out.println("DTO: " + dto);
+            
+            String username = authentication.getName();
+            User user = userService.findByUsername(username).orElse(null);
+            System.out.println("User found: " + (user != null ? user.getUsername() : "null"));
+            
+            if (user == null) {
+                return ResponseEntity.status(401).body("User not found");
             }
-            Adoption saved = adoptionService.save(app);
-            createdAdoptions.add(saved);
-            summary.append("- ")
-                .append(pet.getName())
-                .append(": ")
-                .append(saved.getStatus() == Adoption.Status.APPROVED ? "ĐƯỢC DUYỆT" : "BỊ TỪ CHỐI")
-                .append("\n");
-            // Gửi email cho shelter staff từng pet như cũ
-            if (saved.getPet() != null && saved.getPet().getShelter() != null && saved.getPet().getShelter().getEmail() != null) {
+            
+            UserCart userCart = userCartRepository.findByUserId(user.getId()).orElse(null);
+            System.out.println("UserCart found: " + (userCart != null ? userCart.getPetIds().size() + " pets" : "null"));
+            
+            if (userCart == null || userCart.getPetIds().isEmpty()) {
+                return ResponseEntity.badRequest().body("Cart is empty");
+            }
+            
+            int score = 0;
+            AdoptionTestResult testResult = adoptionTestResultRepository.findTopByUserOrderByCreatedAtDesc(user).orElse(null);
+            if (testResult != null) {
+                score = testResult.getScore();
+                System.out.println("Test score: " + score);
+            }
+            
+            List<Adoption> createdAdoptions = new java.util.ArrayList<>();
+            StringBuilder summary = new StringBuilder();
+            summary.append("Bạn đã gửi đơn xin nhận nuôi cho các thú cưng sau:\n");
+            
+            for (Long petId : userCart.getPetIds()) {
+                Pet pet = petService.findById(petId).orElse(null);
+                if (pet == null) continue;
+                
+                System.out.println("Creating adoption for pet: " + pet.getName() + " (ID: " + petId + ")");
+                System.out.println("DTO message: " + dto.getMessage());
+                
+                Adoption app = new Adoption();
+                app.setUser(user);
+                app.setPet(pet);
+                app.setMessage(dto.getMessage());
+                // Removed phone and address - can be retrieved from user object
+                app.setAppliedAt(LocalDateTime.now()); // Set application timestamp
+                
+                // Set status as PENDING for admin/shelter to review
+                app.setStatus(Adoption.Status.PENDING);
+                
+                // Store test score in admin notes for reference
+                String adminNotes = "Điểm bài test: " + score + "/100";
+                if (score >= 70) {
+                    adminNotes += " (Đủ điều kiện)";
+                } else {
+                    adminNotes += " (Cần cải thiện)";
+                }
+                app.setAdminNotes(adminNotes);
+                
+                Adoption saved = adoptionService.save(app);
+                System.out.println("Adoption saved with ID: " + saved.getId() + ", Status: " + saved.getStatus());
+                
+                createdAdoptions.add(saved);
+                summary.append("- ")
+                    .append(pet.getName())
+                    .append(": ĐÃ GỬI (Chờ xét duyệt)")
+                    .append("\n");
+                    
+                // Gửi email cho shelter staff từng pet như cũ
+                if (saved.getPet() != null && saved.getPet().getShelter() != null && saved.getPet().getShelter().getEmail() != null) {
+                    notificationService.sendEmail(
+                        saved.getPet().getShelter().getEmail(),
+                        "Có đơn xin nhận nuôi mới cần xét duyệt",
+                        "Có một đơn xin nhận nuôi mới cho thú cưng: " + saved.getPet().getName() + ". Vui lòng đăng nhập để xét duyệt."
+                    );
+                }
+            }
+            
+            summary.append("\nĐiểm bài test của bạn: ").append(score).append(".");
+            summary.append("\n\nCác đơn đã được gửi thành công và đang chờ xét duyệt bởi admin/shelter.");
+            
+            // Gửi 1 email tổng hợp cho user
+            if (user.getEmail() != null) {
                 notificationService.sendEmail(
-                    saved.getPet().getShelter().getEmail(),
-                    "Có đơn xin nhận nuôi mới",
-                    "Có một đơn xin nhận nuôi mới cho thú cưng: " + saved.getPet().getName() + ". Trạng thái: " + (saved.getStatus() == Adoption.Status.APPROVED ? "DUYỆT" : "TỪ CHỐI")
+                    user.getEmail(),
+                    "Đơn xin nhận nuôi đã được gửi",
+                    summary.toString()
                 );
             }
+            
+            System.out.println("=== Total adoptions created: " + createdAdoptions.size() + " ===");
+            
+            // Clear cart after successful adoption
+            if (userCart != null) {
+                userCart.getPetIds().clear();
+                userCartRepository.save(userCart);
+                System.out.println("=== Cart cleared after adoption ===");
+            }
+            
+            return ResponseEntity.ok(createdAdoptions);
+            
+        } catch (Exception e) {
+            System.err.println("=== Error in adoptFromCart: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating adoptions: " + e.getMessage());
         }
-        summary.append("\nĐiểm bài test của bạn: ").append(score).append(".");
-        // Gửi 1 email tổng hợp cho user
-        if (user.getEmail() != null) {
-            notificationService.sendEmail(
-                user.getEmail(),
-                "Kết quả đơn xin nhận nuôi",
-                summary.toString()
-            );
-        }
-        return ResponseEntity.ok(createdAdoptions);
     }
 
     @PreAuthorize("hasAnyRole('SHELTER','ADMIN')")
@@ -191,5 +240,220 @@ public class AdoptionController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    // Get adoption statistics - Admin only
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getAdoptionStats() {
+        try {
+            List<Adoption> allAdoptions = adoptionService.findAll();
+            
+            // Calculate statistics
+            long totalAdoptions = allAdoptions.size();
+            long pendingAdoptions = allAdoptions.stream()
+                .filter(adoption -> Adoption.Status.PENDING.equals(adoption.getStatus()))
+                .count();
+            long approvedAdoptions = allAdoptions.stream()
+                .filter(adoption -> Adoption.Status.APPROVED.equals(adoption.getStatus()))
+                .count();
+            long rejectedAdoptions = allAdoptions.stream()
+                .filter(adoption -> Adoption.Status.REJECTED.equals(adoption.getStatus()))
+                .count();
+            
+            // Calculate this month's adoptions
+            java.time.LocalDateTime startOfMonth = java.time.LocalDateTime.now()
+                .withDayOfMonth(1)
+                .withHour(0)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0);
+            
+            long thisMonthAdoptions = allAdoptions.stream()
+                .filter(adoption -> adoption.getAppliedAt() != null && 
+                        adoption.getAppliedAt().isAfter(startOfMonth))
+                .count();
+            
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalAdoptions", totalAdoptions);
+            stats.put("pendingAdoptions", pendingAdoptions);
+            stats.put("approvedAdoptions", approvedAdoptions);
+            stats.put("rejectedAdoptions", rejectedAdoptions);
+            stats.put("thisMonthAdoptions", thisMonthAdoptions);
+            
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Failed to get adoption statistics: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // Get all adoptions (for admin/shelter)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER')")
+    @GetMapping("/all")
+    public ResponseEntity<List<Adoption>> getAllAdoptions() {
+        try {
+            System.out.println("=== getAllAdoptions called ===");
+            List<Adoption> adoptions = adoptionService.getAllAdoptions();
+            System.out.println("=== Found " + adoptions.size() + " adoptions ===");
+            
+            if (adoptions.isEmpty()) {
+                System.out.println("=== No adoptions found in database ===");
+            } else {
+                System.out.println("=== First adoption: " + adoptions.get(0).getId() + " ===");
+            }
+            
+            return ResponseEntity.ok(adoptions);
+        } catch (Exception e) {
+            System.err.println("=== Error in getAllAdoptions: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Update adoption status (for admin/shelter)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER')")
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Adoption> updateAdoptionStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request) {
+        try {
+            System.out.println("=== updateAdoptionStatus called ===");
+            System.out.println("id: " + id);
+            System.out.println("request: " + request);
+            
+            String status = (String) request.get("status");
+            String adminNotes = (String) request.get("adminNotes");
+            String shelterNotes = (String) request.get("shelterNotes");
+            
+            System.out.println("status: " + status);
+            System.out.println("adminNotes: " + adminNotes);
+            System.out.println("shelterNotes: " + shelterNotes);
+            
+            Adoption updatedAdoption = adoptionService.updateAdoptionStatus(id, status, adminNotes, shelterNotes);
+            System.out.println("=== Updated adoption: " + updatedAdoption.getId() + " with status: " + updatedAdoption.getStatus() + " ===");
+            System.out.println("=== Response object details ===");
+            System.out.println("ID: " + updatedAdoption.getId());
+            System.out.println("Status: " + updatedAdoption.getStatus());
+            System.out.println("User: " + (updatedAdoption.getUser() != null ? updatedAdoption.getUser().getId() : "null"));
+            System.out.println("Pet: " + (updatedAdoption.getPet() != null ? updatedAdoption.getPet().getId() : "null"));
+            System.out.println("Admin Notes: " + updatedAdoption.getAdminNotes());
+            System.out.println("Shelter Notes: " + updatedAdoption.getShelterNotes());
+            
+            return ResponseEntity.ok(updatedAdoption);
+        } catch (Exception e) {
+            System.err.println("=== Error in updateAdoptionStatus: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Test endpoint to create sample adoption (for development only)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/test-create")
+    public ResponseEntity<Adoption> createTestAdoption() {
+        try {
+            System.out.println("=== Creating test adoption ===");
+            
+            // Get first user and pet for testing
+            List<User> users = userService.findAll();
+            List<Pet> pets = petService.findAll();
+            
+            if (users.isEmpty() || pets.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            User testUser = users.get(0);
+            Pet testPet = pets.get(0);
+            
+            Adoption testAdoption = new Adoption();
+            testAdoption.setUser(testUser);
+            testAdoption.setPet(testPet);
+            testAdoption.setStatus(Adoption.Status.PENDING);
+            testAdoption.setMessage("Test adoption for admin dashboard");
+            // Removed phone and address - can be retrieved from user object
+            testAdoption.setAppliedAt(LocalDateTime.now()); // Set application timestamp for test
+            
+            Adoption saved = adoptionService.save(testAdoption);
+            System.out.println("=== Test adoption created with ID: " + saved.getId() + " ===");
+            
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            System.err.println("=== Error creating test adoption: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Test endpoint to check user data (for development only)
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/test-user/{userId}")
+    public ResponseEntity<User> testUserData(@PathVariable Long userId) {
+        try {
+            System.out.println("=== Testing user data for ID: " + userId + " ===");
+            Optional<User> userOpt = userService.findById(userId);
+            
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                System.out.println("=== User Details ===");
+                System.out.println("User ID: " + user.getId());
+                System.out.println("Username: " + user.getUsername());
+                System.out.println("Email: " + user.getEmail());
+                System.out.println("Full Name: " + user.getFullName());
+                System.out.println("Phone: " + user.getPhone());
+                System.out.println("Address: " + user.getAddress());
+                System.out.println("Role: " + user.getRole());
+                return ResponseEntity.ok(user);
+            } else {
+                System.out.println("=== User not found ===");
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            System.err.println("=== Error testing user data: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Test endpoint to update user phone and address (for development only)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/test-user/{userId}")
+    public ResponseEntity<User> updateTestUserData(@PathVariable Long userId, @RequestBody Map<String, String> request) {
+        try {
+            System.out.println("=== Updating user data for ID: " + userId + " ===");
+            System.out.println("Request data: " + request);
+            
+            Optional<User> userOpt = userService.findById(userId);
+            
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                
+                // Update phone and address
+                if (request.containsKey("phone")) {
+                    user.setPhone(request.get("phone"));
+                    System.out.println("Updated phone to: " + request.get("phone"));
+                }
+                
+                if (request.containsKey("address")) {
+                    user.setAddress(request.get("address"));
+                    System.out.println("Updated address to: " + request.get("address"));
+                }
+                
+                User savedUser = userService.save(user);
+                System.out.println("=== User updated successfully ===");
+                System.out.println("New phone: " + savedUser.getPhone());
+                System.out.println("New address: " + savedUser.getAddress());
+                
+                return ResponseEntity.ok(savedUser);
+            } else {
+                System.out.println("=== User not found ===");
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            System.err.println("=== Error updating user data: " + e.getMessage() + " ===");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 } 

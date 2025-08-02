@@ -8,8 +8,9 @@ import { useAppDispatch } from '../hook';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useCart } from '../hook';
 import { toast } from 'react-toastify';
-import { FaMapMarkerAlt, FaCalendarAlt, FaVenusMars, FaSearch, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaVenusMars, FaSearch, FaPhone, FaEnvelope, FaHeart } from 'react-icons/fa';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import AdoptionForm from '../components/adoption/AdoptionForm';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
 
@@ -22,6 +23,7 @@ const PetDetailPage = () => {
   const { isAdopter, isAuthenticated } = useAuthContext();
   const { userCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
+  const [isAdoptionFormOpen, setIsAdoptionFormOpen] = useState(false);
 
   // Get pet from selectedPet (if set by management page) or find in pets array
   const pet = selectedPet || pets.find(p => p.id === parseInt(id));
@@ -222,8 +224,12 @@ const PetDetailPage = () => {
             <div className="flex gap-4 flex-wrap">
               {pet.status === 'AVAILABLE' ? (
                 <>
-                  <button className="flex-1 min-w-48 bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-300">
-                    Nhận nuôi ngay
+                  <button 
+                    className="flex-1 min-w-48 bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
+                    onClick={() => setIsAdoptionFormOpen(true)}
+                  >
+                    <FaHeart />
+                    Gửi đơn nhận nuôi
                   </button>
                   {(isAdopter() || !isAuthenticated) && (
                     <button
@@ -241,6 +247,17 @@ const PetDetailPage = () => {
                 </div>
               )}
             </div>
+
+            {/* Adoption Form Modal */}
+            {isAdoptionFormOpen && (
+              <AdoptionForm
+                pet={pet}
+                onClose={() => setIsAdoptionFormOpen(false)}
+                onSuccess={() => {
+                  toast.success('Đơn nhận nuôi đã được gửi thành công!');
+                }}
+              />
+            )}
 
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-secondary-800 mb-4">Thông tin liên hệ</h3>

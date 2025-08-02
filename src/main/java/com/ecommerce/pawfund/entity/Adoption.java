@@ -24,8 +24,16 @@ public class Adoption {
     private LocalDateTime appliedAt;
 
     private String message;
-    private String phone;
-    private String address;
+    // Removed phone and address fields - can be retrieved from user object
+
+    @Column(name = "time_available")
+    private String timeAvailable;
+    
+    @Column(name = "admin_notes", columnDefinition = "TEXT")
+    private String adminNotes;
+    
+    @Column(name = "shelter_notes", columnDefinition = "TEXT")
+    private String shelterNotes;
 
     public enum Status {
         PENDING, APPROVED, REJECTED
@@ -42,8 +50,30 @@ public class Adoption {
     public void setStatus(Status status) { this.status = status; }
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public LocalDateTime getAppliedAt() { return appliedAt; }
+    public void setAppliedAt(LocalDateTime appliedAt) { this.appliedAt = appliedAt; }
+
+    public String getTimeAvailable() {
+        return timeAvailable;
+    }
+
+    public void setTimeAvailable(String timeAvailable) {
+        this.timeAvailable = timeAvailable;
+    }
+
+    public String getAdminNotes() {
+        return adminNotes;
+    }
+
+    public void setAdminNotes(String adminNotes) {
+        this.adminNotes = adminNotes;
+    }
+
+    public String getShelterNotes() {
+        return shelterNotes;
+    }
+
+    public void setShelterNotes(String shelterNotes) {
+        this.shelterNotes = shelterNotes;
+    }
 } 
