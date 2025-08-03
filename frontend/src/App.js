@@ -161,12 +161,12 @@ function App() {
                 </RoleRoute>
               } />
               <Route path="/shelter/events" element={
-                <RoleRoute allowedRoles={['SHELTER']} requiredPermissions={['view_events']}>
+                <RoleRoute allowedRoles={['SHELTER']}>
                   <ShelterEventsPage />
                 </RoleRoute>
               } />
               <Route path="/volunteer/events" element={
-                <RoleRoute allowedRoles={['VOLUNTEER']} requiredPermissions={['view_events']}>
+                <RoleRoute allowedRoles={['VOLUNTEER']}>
                   <VolunteerEventsPage />
                 </RoleRoute>
               } />

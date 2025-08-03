@@ -3,6 +3,7 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { FaCalendar, FaMapMarkerAlt, FaClock, FaUsers } from 'react-icons/fa';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { eventAPI } from '../../api/event';
 
 const ShelterEventsPage = () => {
     const { isShelterStaff } = useAuthContext();
@@ -18,16 +19,18 @@ const ShelterEventsPage = () => {
     const loadMyEvents = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/events/shelter-events', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setEvents(data);
+            const response = await eventAPI.getEvents({ shelterId: 'current' });
+            console.log('Shelter events response:', response);
+            console.log('Response type:', typeof response);
+            console.log('Response length:', Array.isArray(response) ? response.length : 'Not an array');
+            
+            // Axios interceptor trả về response.data trực tiếp
+            if (Array.isArray(response)) {
+                console.log('Events array:', response);
+                setEvents(response);
             } else {
-                toast.error('Không thể tải danh sách sự kiện');
+                console.error('Response is not an array:', response);
+                setEvents([]);
             }
         } catch (error) {
             console.error('Error loading events:', error);
@@ -107,6 +110,12 @@ const ShelterEventsPage = () => {
     if (isLoading) {
         return <LoadingSpinner />;
     }
+
+    // Debug render
+    console.log('=== ShelterEventsPage render ===');
+    console.log('events state:', events);
+    console.log('events length:', events.length);
+    console.log('isLoading:', isLoading);
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">

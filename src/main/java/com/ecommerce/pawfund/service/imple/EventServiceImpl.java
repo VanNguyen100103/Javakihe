@@ -63,6 +63,13 @@ public class EventServiceImpl implements IEventService {
     }
 
     @Override
+    public List<EventDTO> findByVolunteerIdAsDTO(Long volunteerId) {
+        return eventRepository.findByVolunteerId(volunteerId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public EventDTO convertToDTO(Event event) {
         EventDTO dto = new EventDTO();
         dto.setId(event.getId());

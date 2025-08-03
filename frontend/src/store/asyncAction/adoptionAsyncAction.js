@@ -6,9 +6,26 @@ export const fetchAdoptions = createAsyncThunk(
     'adoption/fetchAdoptions',
     async (params, { rejectWithValue }) => {
         try {
+            console.log('=== fetchAdoptions called ===');
             const response = await adoptionAPI.getAdoptions();
-            return response.data;
+            console.log('=== fetchAdoptions response ===', response);
+            console.log('=== typeof response ===', typeof response);
+            console.log('=== Array.isArray(response) ===', Array.isArray(response));
+            
+            // Axios interceptor có thể trả về response.data trực tiếp
+            const data = response;
+            console.log('=== Final data to return ===', data);
+            console.log('=== Data length ===', Array.isArray(data) ? data.length : 'Not an array');
+            
+            // Kiểm tra data có phải array không
+            if (!Array.isArray(data)) {
+                console.error('Data is not an array:', data);
+                return rejectWithValue('Dữ liệu không đúng định dạng');
+            }
+            
+            return data;
         } catch (error) {
+            console.error('=== fetchAdoptions error ===', error);
             return rejectWithValue(error.response?.data || 'Failed to fetch adoptions');
         }
     }

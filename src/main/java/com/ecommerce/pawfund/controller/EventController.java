@@ -287,4 +287,44 @@ public class EventController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    // Get events for current shelter user
+    @GetMapping("/shelter-events")
+    @PreAuthorize("hasRole('SHELTER')")
+    public ResponseEntity<List<EventDTO>> getShelterEvents(Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            User currentUser = userRepository.findByUsername(username).orElse(null);
+            
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            List<EventDTO> shelterEvents = eventService.findByShelterIdAsDTO(currentUser.getId());
+            return ResponseEntity.ok(shelterEvents);
+        } catch (Exception e) {
+            System.err.println("Error getting shelter events: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Get events for current volunteer user
+    @GetMapping("/volunteer-events")
+    @PreAuthorize("hasRole('VOLUNTEER')")
+    public ResponseEntity<List<EventDTO>> getVolunteerEvents(Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            User currentUser = userRepository.findByUsername(username).orElse(null);
+            
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            List<EventDTO> volunteerEvents = eventService.findByVolunteerIdAsDTO(currentUser.getId());
+            return ResponseEntity.ok(volunteerEvents);
+        } catch (Exception e) {
+            System.err.println("Error getting volunteer events: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 } 

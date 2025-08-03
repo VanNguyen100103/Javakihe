@@ -12,9 +12,18 @@ export const eventAPI = {
         if (params.category) queryParams.append('category', params.category);
         if (params.search) queryParams.append('search', params.search);
         if (params.location) queryParams.append('location', params.location);
-        if (params.shelterId) queryParams.append('shelterId', params.shelterId);
+        if (params.shelterId && params.shelterId !== 'current') queryParams.append('shelterId', params.shelterId);
+        if (params.volunteerId && params.volunteerId !== 'current') queryParams.append('volunteerId', params.volunteerId);
 
-        const url = `/events?${queryParams.toString()}`;
+        let url;
+        if (params.shelterId === 'current') {
+            url = '/events/shelter-events';
+        } else if (params.volunteerId === 'current') {
+            url = '/events/volunteer-events';
+        } else {
+            url = `/events?${queryParams.toString()}`;
+        }
+        
         console.log('Event API call:', url);
         console.log('Event params:', params);
 

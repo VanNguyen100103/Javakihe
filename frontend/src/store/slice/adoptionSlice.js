@@ -11,7 +11,8 @@ import {
 } from '../asyncAction/adoptionAsyncAction';
 
 const initialState = {
-    adoptions: [],
+    adoptions: [], // User's adoptions
+    allAdoptions: [], // All adoptions (for admin/shelter)
     testResult: null,
     isLoading: false,
     error: null,
@@ -54,7 +55,7 @@ const adoptionSlice = createSlice({
         });
         builder.addCase(fetchAllAdoptions.fulfilled, (state, action) => {
             state.isLoading = false;
-            state.adoptions = action.payload;
+            state.allAdoptions = action.payload;
         });
         builder.addCase(fetchAllAdoptions.rejected, (state, action) => {
             state.isLoading = false;

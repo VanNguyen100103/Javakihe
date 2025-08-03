@@ -126,7 +126,7 @@ const Header = () => {
     // Menu items for VOLUNTEER role
     if (userRole === 'VOLUNTEER') {
       items.push(
-        { path: '/adoptions', label: 'Hỗ trợ nhận nuôi', icon: FaHeart },
+    
         { path: '/donations', label: 'Quyên góp', icon: FaHandHoldingHeart }
       );
     }
@@ -211,7 +211,6 @@ const Header = () => {
 
             {isAuthenticated ? (
               <>
-
                 {/* User Menu */}
                 <div className="relative" ref={userMenuRef}>
                   <button

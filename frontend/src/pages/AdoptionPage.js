@@ -10,11 +10,19 @@ const AdoptionPage = () => {
   const dispatch = useAppDispatch();
   const { adoptions = [], isLoading = false } = useAdoption();
   
+  // Modal chi tiết
+  const [selectedAdoption, setSelectedAdoption] = useState(null);
+  
+  console.log('=== AdoptionPage render ===');
+  console.log('adoptions:', adoptions);
+  console.log('isLoading:', isLoading);
+  console.log('adoptions length:', adoptions?.length);
+  
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     petId: '',
-    reason: '',
+    message: '',
     experience: '',
     livingCondition: '',
     familyMembers: '',
@@ -37,7 +45,7 @@ const AdoptionPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.petId || !formData.reason) {
+    if (!formData.petId || !formData.message) {
       toast.error('Vui lòng điền đầy đủ thông tin bắt buộc!');
       return;
     }
@@ -50,7 +58,7 @@ const AdoptionPage = () => {
       setShowCreateForm(false);
       setFormData({
         petId: '',
-        reason: '',
+        message: '',
         experience: '',
         livingCondition: '',
         familyMembers: '',
@@ -66,14 +74,14 @@ const AdoptionPage = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'pending':
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
         return 'status-pending';
-      case 'approved':
+      case 'APPROVED':
         return 'status-approved';
-      case 'rejected':
+      case 'REJECTED':
         return 'status-rejected';
-      case 'completed':
+      case 'COMPLETED':
         return 'status-completed';
       default:
         return 'status-unknown';
@@ -81,14 +89,14 @@ const AdoptionPage = () => {
   };
 
   const getStatusText = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'pending':
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
         return 'Đang xử lý';
-      case 'approved':
+      case 'APPROVED':
         return 'Đã chấp thuận';
-      case 'rejected':
+      case 'REJECTED':
         return 'Từ chối';
-      case 'completed':
+      case 'COMPLETED':
         return 'Hoàn thành';
       default:
         return 'Không xác định';
@@ -96,7 +104,12 @@ const AdoptionPage = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('vi-VN');
+    if (!dateString) return 'Không có thông tin';
+    try {
+      return new Date(dateString).toLocaleDateString('vi-VN');
+    } catch (error) {
+      return 'Không có thông tin';
+    }
   };
 
   if (isLoading) {
@@ -112,82 +125,74 @@ const AdoptionPage = () => {
         </div>
 
         <div className="adoption-content">
-          <div className="adoption-header">
-            <h2>Danh sách yêu cầu nhận nuôi</h2>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShowCreateForm(true)}
-            >
-              <FaPlus />
-              Tạo yêu cầu mới
-            </button>
-          </div>
+        
 
-          {!adoptions || adoptions.length === 0 ? (
+          {(!adoptions || adoptions.length === 0) ? (
             <div className="empty-adoptions">
               <FaHeart className="empty-icon" />
               <h3>Chưa có yêu cầu nhận nuôi</h3>
               <p>Bạn chưa có yêu cầu nhận nuôi nào. Hãy tạo yêu cầu mới!</p>
-              <button
-                className="btn btn-primary"
-                onClick={() => setShowCreateForm(true)}
-              >
-                Tạo yêu cầu đầu tiên
-              </button>
+            
             </div>
           ) : (
             <div className="adoptions-list">
               {Array.isArray(adoptions) && adoptions.map((adoption) => (
-                <div key={adoption.id} className="adoption-card">
-                  <div className="adoption-header">
+                <div key={adoption.id} className="adoption-card" style={{
+                  border: '1px solid #eee',
+                  borderRadius: 8,
+                  padding: 16,
+                  marginBottom: 16,
+                  background: '#fff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+                }}>
+                  <div className="adoption-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <div className="adoption-info">
-                      <h3>{adoption.pet?.name}</h3>
-                      <p className="adoption-breed">{adoption.pet?.breed}</p>
+                      <h3 style={{margin: 0}}>{adoption.pet?.name}</h3>
+                      <p className="adoption-breed" style={{margin: 0, color: '#888'}}>{adoption.pet?.breed}</p>
                     </div>
                     <span className={`adoption-status ${getStatusColor(adoption.status)}`}>
                       {getStatusText(adoption.status)}
                     </span>
                   </div>
 
-                  <div className="adoption-details">
-                    <div className="detail-item">
-                      <FaCalendarAlt />
-                      <span>Ngày yêu cầu: {formatDate(adoption.createdAt)}</span>
-                    </div>
-                    
-                    <div className="detail-item">
-                      <FaMapMarkerAlt />
-                      <span>Địa điểm: {adoption.pet?.location}</span>
-                    </div>
+                  <div className="adoption-details" style={{marginTop: 8}}>
+                    <p style={{margin: 0}}><b>Ngày yêu cầu:</b> {formatDate(adoption.appliedAt)}</p>
+                    <p style={{margin: 0}}><b>Địa điểm:</b> {adoption.pet?.location}</p>
+                    <p style={{margin: 0}}><b>Lý do nhận nuôi:</b> {adoption.message}</p>
+                    {adoption.adminNotes && (
+                      <p style={{margin: 0}}><b>Ghi chú từ admin:</b> {adoption.adminNotes}</p>
+                    )}
                   </div>
 
-                  <div className="adoption-reason">
-                    <h4>Lý do nhận nuôi:</h4>
-                    <p>{adoption.reason}</p>
-                  </div>
-
-                  {adoption.adminNotes && (
-                    <div className="admin-notes">
-                      <h4>Ghi chú từ admin:</h4>
-                      <p>{adoption.adminNotes}</p>
-                    </div>
-                  )}
-
-                  <div className="adoption-actions">
-                    <button className="btn btn-outline btn-sm">
+                  <div className="adoption-actions" style={{marginTop: 8}}>
+                    <button className="btn btn-outline btn-sm" onClick={() => setSelectedAdoption(adoption)}>
                       Xem chi tiết
                     </button>
-                    {adoption.status === 'pending' && (
-                      <button className="btn btn-outline btn-sm">
-                        Hủy yêu cầu
-                      </button>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {/* Modal chi tiết đơn nhận nuôi */}
+        {selectedAdoption && (
+          <div className="modal-overlay" style={{position: 'fixed', top:0, left:0, right:0, bottom:0, background: 'rgba(0,0,0,0.3)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <div className="modal-content" style={{background: '#fff', borderRadius: 8, padding: 24, minWidth: 320, maxWidth: 400, boxShadow: '0 4px 24px rgba(0,0,0,0.15)'}}>
+              <h3>Chi tiết đơn nhận nuôi</h3>
+              <p><b>Thú cưng:</b> {selectedAdoption.pet?.name}</p>
+              <p><b>Giống:</b> {selectedAdoption.pet?.breed}</p>
+              <p><b>Trạng thái:</b> {getStatusText(selectedAdoption.status)}</p>
+              <p><b>Ngày yêu cầu:</b> {formatDate(selectedAdoption.appliedAt)}</p>
+              <p><b>Địa điểm:</b> {selectedAdoption.pet?.location}</p>
+              <p><b>Lý do nhận nuôi:</b> {selectedAdoption.message}</p>
+              {selectedAdoption.adminNotes && (
+                <p><b>Ghi chú từ admin:</b> {selectedAdoption.adminNotes}</p>
+              )}
+              <button className="btn btn-outline" style={{marginTop: 16}} onClick={() => setSelectedAdoption(null)}>Đóng</button>
+            </div>
+          </div>
+        )}
 
         {/* Create Adoption Modal */}
         {showCreateForm && (
@@ -220,11 +225,11 @@ const AdoptionPage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="reason">Lý do nhận nuôi *</label>
+                  <label htmlFor="message">Lý do nhận nuôi *</label>
                   <textarea
-                    id="reason"
-                    name="reason"
-                    value={formData.reason}
+                    id="message"
+                    name="message"
+                    value={formData.message}
                     onChange={handleInputChange}
                     placeholder="Mô tả lý do bạn muốn nhận nuôi thú cưng này..."
                     rows="4"

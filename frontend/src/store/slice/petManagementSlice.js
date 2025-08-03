@@ -72,13 +72,35 @@ const petManagementSlice = createSlice({
     });
     builder.addCase(fetchPetsForManagement.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.pets = action.payload.content || action.payload;
-      if (action.payload.pageable) {
+      console.log('PetManagement fulfilled payload:', action.payload);
+      
+      // Axios interceptor trả về response.data trực tiếp
+      if (action.payload && action.payload.content) {
+        // Có pagination
+        state.pets = action.payload.content;
         state.pagination = {
-          currentPage: action.payload.number,
-          totalPages: action.payload.totalPages,
-          totalElements: action.payload.totalElements,
-          size: action.payload.size
+          currentPage: action.payload.number || 0,
+          totalPages: action.payload.totalPages || 0,
+          totalElements: action.payload.totalElements || 0,
+          size: action.payload.size || 10
+        };
+      } else if (Array.isArray(action.payload)) {
+        // Không có pagination, trả về array trực tiếp
+        state.pets = action.payload;
+        state.pagination = {
+          currentPage: 0,
+          totalPages: 1,
+          totalElements: action.payload.length,
+          size: action.payload.length
+        };
+      } else {
+        // Fallback
+        state.pets = [];
+        state.pagination = {
+          currentPage: 0,
+          totalPages: 0,
+          totalElements: 0,
+          size: 10
         };
       }
     });

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import com.ecommerce.pawfund.dto.AdoptionRequestDTO;
@@ -46,10 +47,39 @@ public class AdoptionController {
 
     @GetMapping
     public List<Adoption> getAllApplications(@RequestParam(required = false) Long userId,
-                                                       @RequestParam(required = false) Long petId) {
-        if (userId != null) return adoptionService.findByUserId(userId);
-        if (petId != null) return adoptionService.findByPetId(petId);
-        return adoptionService.findAll();
+                                                       @RequestParam(required = false) Long petId,
+                                                       Authentication authentication) {
+        System.out.println("=== getAllApplications called ===");
+        System.out.println("userId: " + userId);
+        System.out.println("petId: " + petId);
+        System.out.println("authentication: " + (authentication != null ? "not null" : "null"));
+        
+        // Nếu có userId parameter, trả về adoptions của user đó (cho admin/shelter)
+        if (userId != null) {
+            System.out.println("Returning adoptions for userId: " + userId);
+            return adoptionService.findByUserId(userId);
+        }
+        if (petId != null) {
+            System.out.println("Returning adoptions for petId: " + petId);
+            return adoptionService.findByPetId(petId);
+        }
+        
+        // Nếu không có parameter, trả về adoptions của user hiện tại
+        if (authentication != null && authentication.isAuthenticated()) {
+            String username = authentication.getName();
+            System.out.println("Current user username: " + username);
+            User currentUser = userService.findByUsername(username).orElse(null);
+            System.out.println("Current user found: " + (currentUser != null ? "yes" : "no"));
+            if (currentUser != null) {
+                System.out.println("Current user ID: " + currentUser.getId());
+                List<Adoption> userAdoptions = adoptionService.findByUserId(currentUser.getId());
+                System.out.println("Found " + userAdoptions.size() + " adoptions for current user");
+                return userAdoptions;
+            }
+        }
+        
+        System.out.println("Returning empty list");
+        return new ArrayList<>();
     }
 
     @GetMapping("/{id}")

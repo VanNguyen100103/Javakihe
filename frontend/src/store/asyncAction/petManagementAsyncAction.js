@@ -7,9 +7,13 @@ export const fetchPetsForManagement = createAsyncThunk(
   'petManagement/fetchPets',
   async (params = {}, { rejectWithValue }) => {
     try {
+      console.log('FetchPetsForManagement - params:', params);
       const response = await petManagementAPI.getPets(params);
-      return response.data;
+      console.log('FetchPetsForManagement - response:', response);
+      // Axios interceptor đã trả về response.data trực tiếp
+      return response;
     } catch (error) {
+      console.error('FetchPetsForManagement - error:', error);
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch pets');
     }
   }
@@ -21,7 +25,7 @@ export const fetchPetByIdForManagement = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await petManagementAPI.getPetById(id);
-      return response.data;
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch pet');
     }
@@ -35,7 +39,7 @@ export const createPet = createAsyncThunk(
     try {
       const response = await petManagementAPI.createPet(petData, images, shelterId);
       toast.success('Thú cưng đã được tạo thành công!');
-      return response.data;
+      return response;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to create pet');
       return rejectWithValue(error.response?.data?.message || 'Failed to create pet');
@@ -50,7 +54,7 @@ export const updatePet = createAsyncThunk(
     try {
       const response = await petManagementAPI.updatePet(id, petData, images);
       toast.success('Thú cưng đã được cập nhật thành công!');
-      return response.data;
+      return response;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update pet');
       return rejectWithValue(error.response?.data?.message || 'Failed to update pet');

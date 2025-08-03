@@ -16,6 +16,7 @@ public interface IEventService {
     List<EventDTO> findAllAsDTO();
     Optional<EventDTO> findByIdAsDTO(Long id);
     List<EventDTO> findByShelterIdAsDTO(Long shelterId);
+    List<EventDTO> findByVolunteerIdAsDTO(Long volunteerId);
     EventDTO convertToDTO(Event event);
     EventDTO saveAsDTO(Event event);
 } 

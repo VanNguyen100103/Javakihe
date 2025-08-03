@@ -6,7 +6,6 @@ import { useAppDispatch } from '../hook';
 import { FaHeart, FaPaw, FaUsers, FaHandHoldingHeart, FaArrowRight, FaSearch, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 import PetCard from '../components/pet/PetCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import DonationStatistics from '../components/admin/DonationStatistics';
 
 const HomePage = () => {
   const dispatch = useAppDispatch();
@@ -139,8 +138,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Donation Stats Section */}
-      <DonationStatistics />
+
 
       {/* Featured Pets Section */}
       <section className="py-16 bg-gray-50">

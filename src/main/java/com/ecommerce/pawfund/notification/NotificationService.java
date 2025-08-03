@@ -24,6 +24,7 @@ public class NotificationService {
 
     public void notifyShelters(Event event, List<User> shelters) {
         for (User shelter : shelters) {
+            // Send email notification
             sendEventNotification(shelter, event, "Nhân viên cứu hộ",
                 "Bạn đã được phân công phụ trách sự kiện: " + event.getTitle(),
                 "Vui lòng có mặt sớm nhất để chuẩn bị và sắp xếp công việc.");

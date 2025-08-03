@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch } from '../../hook';
-import { usePet } from '../../hook';
+import { usePetManagement } from '../../hook';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { 
@@ -16,13 +16,13 @@ import {
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import SearchFilter from '../../components/common/SearchFilter';
 import PetForm from '../../components/pet/PetForm';
-import { fetchPets, deletePet } from '../../store/asyncAction/petAsyncAction';
-import { setCurrentPet } from '../../store/slice/petSlice';
+import { fetchPetsForManagement, deletePet } from '../../store/asyncAction/petManagementAsyncAction';
+import { setCurrentPet } from '../../store/slice/petManagementSlice';
 
 const PetManagementPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { pets, isLoading, error } = usePet();
+  const { pets, isLoading, error } = usePetManagement();
   
   const [selectedPet, setSelectedPet] = useState(null);
   const [showPetModal, setShowPetModal] = useState(false);
@@ -36,11 +36,14 @@ const PetManagementPage = () => {
     ageMin: '',
     ageMax: '',
     location: '',
+    page: 0,
+    size: 10,
     sortBy: 'id',
     sortOrder: 'desc'
   });
 
   useEffect(() => {
+    console.log('PetManagementPage useEffect - fetching pets with filters:', filters);
     fetchPetsData();
   }, [filters]);
 
@@ -52,7 +55,7 @@ const PetManagementPage = () => {
 
   const fetchPetsData = async () => {
     try {
-      await dispatch(fetchPets(filters)).unwrap();
+      await dispatch(fetchPetsForManagement(filters)).unwrap();
     } catch (error) {
       toast.error('Lỗi khi tải danh sách thú cưng');
     }
@@ -107,6 +110,14 @@ const PetManagementPage = () => {
     };
     return texts[status] || status;
   };
+
+  // Debug state
+  console.log('PetManagementPage state:', {
+    isLoading,
+    petsLength: pets.length,
+    pets,
+    error
+  });
 
   if (isLoading && pets.length === 0) {
     return <LoadingSpinner />;
@@ -316,6 +327,33 @@ const PetManagementPage = () => {
             </table>
           </div>
         </div>
+
+        {/* Pagination */}
+        {pets.length > 0 && (
+          <div className="mt-6 flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Hiển thị {pets.length} thú cưng
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handleFilterChange({ page: Math.max(0, (filters.page || 0) - 1) })}
+                disabled={filters.page === 0}
+                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Trước
+              </button>
+              <span className="px-3 py-2 text-sm font-medium text-gray-700">
+                Trang {filters.page + 1}
+              </span>
+              <button
+                onClick={() => handleFilterChange({ page: (filters.page || 0) + 1 })}
+                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Empty State */}
         {pets.length === 0 && !isLoading && (
