@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAppDispatch } from '../../hook';
 import { useUserManagement } from '../../hook';
 import { toast } from 'react-toastify';
 import { 
   FaUsers, 
-  FaSearch, 
-  FaFilter, 
   FaEdit, 
-  FaTrash, 
-  FaEye, 
-  FaEyeSlash,
-  FaSpinner,
-  FaPlus,
   FaUserCheck,
   FaUserTimes
 } from 'react-icons/fa';
@@ -41,7 +34,7 @@ const ShelterUserManagementPage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [filters]);
+  }, [filters, fetchUsers]);
 
   useEffect(() => {
     if (error) {
@@ -52,7 +45,7 @@ const ShelterUserManagementPage = () => {
     }
   }, [error, message]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       // Shelter staff can only view non-admin users
       const shelterFilters = {
@@ -63,7 +56,7 @@ const ShelterUserManagementPage = () => {
     } catch (error) {
       toast.error('Lỗi khi tải danh sách người dùng');
     }
-  };
+  }, [dispatch, filters]);
 
   const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
