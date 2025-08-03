@@ -4,7 +4,7 @@ import { donationAPI } from '../../api/donation';
 import { useAppDispatch } from '../../hook';
 import { createDonation } from '../../store/asyncAction/donationAsyncAction';
 import { toast } from 'react-toastify';
-import { FaPaypal, FaSpinner } from 'react-icons/fa';
+import { FaSpinner } from 'react-icons/fa';
 import { useAuth } from '../../hook';
 
 const PayPalButton = ({ 
