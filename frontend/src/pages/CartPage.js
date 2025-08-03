@@ -5,7 +5,7 @@ import { adoptFromCart } from '../store/asyncAction/adoptionAsyncAction';
 import { useAppDispatch } from '../hook';
 import { useAuthContext } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
-import { FaTrash, FaHeart, FaSpinner, FaShoppingCart, FaCheck } from 'react-icons/fa';
+import { FaTrash, FaSpinner, FaShoppingCart, FaCheck } from 'react-icons/fa';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import AdoptionTestModal from '../components/adoption/AdoptionTestModal';
 import { Link } from 'react-router-dom';
@@ -122,66 +122,9 @@ const CartPage = () => {
     }
   };
 
-  // Manual trigger for merge cart (for debugging)
-  const handleManualMerge = () => {
-    let guestToken = localStorage.getItem('guestCartToken');
-    
-    // If no token in localStorage but guest cart has items, create a new token
-    if (!guestToken && guestCart?.items?.length > 0) {
-      console.log('=== Creating new guest token from Redux state ===');
-      guestToken = crypto.randomUUID();
-      localStorage.setItem('guestCartToken', guestToken);
-      console.log('Created new guest token:', guestToken);
-    }
-    
-    if (guestToken) {
-      console.log('=== Manual merge triggered ===');
-      dispatch(mergeCart(guestToken))
-        .unwrap()
-        .then(() => {
-          console.log('Manual merge successful');
-          toast.success('Đã chuyển thú cưng từ giỏ hàng tạm thời vào giỏ hàng của bạn!');
-          localStorage.removeItem('guestCartToken');
-          dispatch(fetchUserCart());
-        })
-        .catch((error) => {
-          console.error('Manual merge failed:', error);
-          toast.error('Không thể chuyển giỏ hàng tạm thời. Vui lòng thử lại.');
-        });
-    } else {
-      console.log('No guest token found for manual merge');
-      toast.info('Không có giỏ hàng tạm thời để chuyển');
-    }
-  };
 
-  // Fallback merge: directly move items from guest cart to user cart in Redux
-  const handleDirectMerge = () => {
-    if (guestCart?.items?.length > 0) {
-      console.log('=== Direct merge from Redux state ===');
-      
-      // Create a new user cart with guest cart items
-      const mergedItems = [...guestCart.items];
-      
-      // Update Redux state directly
-      dispatch({
-        type: 'cart/setUserCart',
-        payload: {
-          items: mergedItems,
-          total: mergedItems.length
-        }
-      });
-      
-      // Clear guest cart
-      dispatch({
-        type: 'cart/clearGuestCart'
-      });
-      
-      toast.success('Đã chuyển thú cưng từ giỏ hàng tạm thời vào giỏ hàng của bạn!');
-      console.log('Direct merge successful');
-    } else {
-      toast.info('Không có thú cưng nào trong giỏ hàng tạm thời');
-    }
-  };
+
+
 
   const handleStartAdoption = () => {
     if (!testResult) {
@@ -271,7 +214,6 @@ const CartPage = () => {
   // Use appropriate cart based on authentication status
   const currentCart = isAuthenticated ? userCart : guestCart;
   const cartItems = currentCart?.items || [];
-  const total = calculateTotal();
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
