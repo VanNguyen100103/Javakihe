@@ -52,11 +52,6 @@ const PieChart = ({ data, title, width = 250, height = 180 }) => {
               const startAngleRad = (segment.startAngle - 90) * (Math.PI / 180);
               const endAngleRad = (segment.startAngle + segment.angle - 90) * (Math.PI / 180);
               
-              const x1 = 80 + 60 * Math.cos(startAngleRad);
-              const y1 = 80 + 60 * Math.sin(startAngleRad);
-              const x2 = 80 + 60 * Math.cos(endAngleRad);
-              const y2 = 80 + 60 * Math.sin(endAngleRad);
-              
               const largeArcFlag = segment.angle > 180 ? 1 : 0;
               const isHovered = hoveredSegment === index;
               
