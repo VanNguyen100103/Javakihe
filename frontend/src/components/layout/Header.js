@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, useCart } from '../../hook';
 import { useAuthContext } from '../../contexts/AuthContext';
-import { logout } from '../../store/asyncAction/authAsyncAction';
+
 import { fetchGuestCart, mergeCart, fetchUserCart } from '../../store/asyncAction/cartAsyncAction';
 import { useAppDispatch } from '../../hook';
 import { toast } from 'react-toastify';
-import { FaUser, FaShoppingCart, FaHeart, FaSignOutAlt, FaBars, FaTimes, FaCog, FaChartLine, FaUsers, FaPaw, FaHandHoldingHeart, FaCalendar } from 'react-icons/fa';
+import { FaUser, FaShoppingCart, FaHeart, FaSignOutAlt, FaBars, FaTimes, FaCog, FaUsers, FaPaw, FaHandHoldingHeart, FaCalendar } from 'react-icons/fa';
 
 const Header = () => {
   const dispatch = useAppDispatch();
@@ -16,9 +16,7 @@ const Header = () => {
   const { userCart, guestCart } = useCart();
   const authContext = useAuthContext();
   const { 
-    userRole, 
-    canManageContent, 
-    canViewAnalytics,
+    userRole,
     handleLogout 
   } = authContext;
   
