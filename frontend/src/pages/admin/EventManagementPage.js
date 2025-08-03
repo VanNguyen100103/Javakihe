@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '../../hook';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaFilter, FaTimes, FaCalendar, FaMapMarkerAlt, FaUsers } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaTimes, FaMapMarkerAlt, FaUsers } from 'react-icons/fa';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Pagination from '../../components/common/Pagination';
 import EventForm from '../../components/event/EventForm';
@@ -32,11 +32,20 @@ const EventManagementPage = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const loadEvents = useCallback(async (page = 0) => {
+    const params = {
+      page,
+      size: pagination.size,
+      ...filters
+    };
+    dispatch(fetchEvents(params));
+  }, [dispatch, pagination.size, filters]);
+
   useEffect(() => {
     if (isAdmin || canManageEvents) {
       loadEvents();
     }
-  }, [isAdmin, canManageEvents]);
+  }, [isAdmin, canManageEvents, loadEvents]);
 
   // Handle error and message toasts
   useEffect(() => {
@@ -49,15 +58,6 @@ const EventManagementPage = () => {
       dispatch(clearMessage());
     }
   }, [error, message, dispatch]);
-
-  const loadEvents = async (page = 0) => {
-    const params = {
-      page,
-      size: pagination.size,
-      ...filters
-    };
-    dispatch(fetchEvents(params));
-  };
 
   const handleFilterChange = (name, value) => {
     dispatch(setFilters({ [name]: value }));
@@ -172,15 +172,7 @@ const EventManagementPage = () => {
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'UPCOMING': return 'Sắp diễn ra';
-      case 'ONGOING': return 'Đang diễn ra';
-      case 'COMPLETED': return 'Đã hoàn thành';
-      case 'CANCELLED': return 'Đã hủy';
-      default: return status;
-    }
-  };
+ 
 
   const getCategoryText = (category) => {
     switch (category) {
