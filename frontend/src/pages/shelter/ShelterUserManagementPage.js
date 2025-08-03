@@ -465,4 +465,4 @@ const ShelterUserModal = ({ user, onSave, onClose }) => {
   );
 };
 
-export default ShelterUserManagementPage; 
+export default ShelterUserManagementPage;
