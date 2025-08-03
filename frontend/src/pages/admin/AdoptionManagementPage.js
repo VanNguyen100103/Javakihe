@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useAppDispatch } from '../../hook';
 import { fetchAllAdoptions, updateAdoptionStatus } from '../../store/asyncAction/adoptionAsyncAction';
 import { toast } from 'react-toastify';
-import { FaCheck, FaTimes, FaEye, FaSpinner, FaFilter, FaSync, FaDownload } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaEye, FaSpinner, FaFilter, FaSync  } from 'react-icons/fa';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const AdoptionManagementPage = () => {
@@ -30,11 +30,7 @@ const AdoptionManagementPage = () => {
     }
   }, [user, isAdmin, navigate]);
 
-  useEffect(() => {
-    fetchAdoptions();
-  }, []);
-
-  const fetchAdoptions = async () => {
+  const fetchAdoptions = useCallback(async () => {
     try {
       setLoading(true);
       console.log('=== Fetching adoptions for admin ===');
@@ -73,7 +69,11 @@ const AdoptionManagementPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch, user, isAdmin]);
+
+  useEffect(() => {
+    fetchAdoptions();
+  }, [fetchAdoptions]);
 
   const handleStatusUpdate = async (adoptionId, newStatus, notes = '') => {
     try {
