@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppDispatch } from '../hook';
 import { fetchAdoptions, createAdoption } from '../store/asyncAction/adoptionAsyncAction';
 import { toast } from 'react-toastify';
-import { FaHeart, FaCalendarAlt, FaMapMarkerAlt, FaSpinner, FaPlus } from 'react-icons/fa';
+import { FaHeart, FaSpinner } from 'react-icons/fa';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const AdoptionPage = () => {
