@@ -48,8 +48,16 @@ const DonationPage = () => {
       return;
     }
 
-    // Show payment modal
-    setShowPaymentModal(true);
+    setIsSubmitting(true);
+    
+    try {
+      // Show payment modal
+      setShowPaymentModal(true);
+    } catch (error) {
+      toast.error('Có lỗi xảy ra!');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePaymentSuccess = (donationResponse, paymentResponse) => {
