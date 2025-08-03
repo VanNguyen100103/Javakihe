@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../hook';
 import { toast } from 'react-toastify';
-import { FaUpload, FaTimes, FaSpinner, FaImage } from 'react-icons/fa';
+import { FaUpload, FaTimes, FaSpinner } from 'react-icons/fa';
 import { createPet, updatePet, fetchSheltersForPet } from '../../store/asyncAction/petAsyncAction';
 import { useAuthContext } from '../../contexts/AuthContext';
 
