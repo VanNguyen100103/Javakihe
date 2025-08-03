@@ -49,7 +49,7 @@ const PetManagementPage = () => {
   useEffect(() => {
     console.log('PetManagementPage useEffect - fetching pets with filters:', filters);
     fetchPetsData();
-  }, [fetchPetsData]);
+  }, [fetchPetsData, filters]);
 
   useEffect(() => {
     if (error) {
