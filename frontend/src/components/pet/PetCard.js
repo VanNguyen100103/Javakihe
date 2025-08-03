@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaMapMarkerAlt, FaCalendarAlt, FaVenusMars, FaSearch, FaImage, FaTrash, FaShoppingCart } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaVenusMars, FaSearch, FaImage, FaTrash, FaShoppingCart } from 'react-icons/fa';
 import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
 import AddImagesModal from './AddImagesModal';
@@ -94,7 +94,7 @@ const PetCard = ({ pet }) => {
         <span className="text-sm text-center">Click để phóng to</span>
       </div>
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-4xl hidden"
+        className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 justify-center items-center text-white text-4xl"
         style={{ display: 'none' }}
       >
         🐾
