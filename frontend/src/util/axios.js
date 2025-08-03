@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Tạo instance axios với base URL
 const api = axios.create({
-    baseURL: 'http://localhost:8888/api',
+    baseURL: process.env.REACT_APP_API_URL || 'https://pawnfundbackend.onrender.com/api',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -52,9 +52,9 @@ api.interceptors.response.use(
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
                 if (refreshToken) {
-                    const response = await axios.post('http://localhost:8888/api/auth/refresh', {
-                        refreshToken: refreshToken
-                    });
+                                    const response = await axios.post('https://pawnfundbackend.onrender.com/api/auth/refresh', {
+                    refreshToken: refreshToken
+                });
                     
                     const { accessToken } = response.data;
                     localStorage.setItem('accessToken', accessToken);
