@@ -1,23 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAppDispatch } from '../../hook';
 import { usePet } from '../../hook';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { 
   FaPaw, 
-  FaSearch, 
-  FaFilter, 
   FaEdit, 
   FaTrash, 
   FaPlus,
-  FaEye,
-  FaSpinner
+  FaEye
 } from 'react-icons/fa';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import SearchFilter from '../../components/common/SearchFilter';
 import PetForm from '../../components/pet/PetForm';
 import { fetchPets, deletePet } from '../../store/asyncAction/petAsyncAction';
-import { setCurrentPet } from '../../store/slice/petSlice';
 
 const PetManagementPage = () => {
   const dispatch = useAppDispatch();
@@ -40,23 +36,23 @@ const PetManagementPage = () => {
     sortOrder: 'desc'
   });
 
+  const fetchPetsData = useCallback(async () => {
+    try {
+      await dispatch(fetchPets(filters)).unwrap();
+    } catch (error) {
+      toast.error('Lỗi khi tải danh sách thú cưng');
+    }
+  }, [dispatch, filters]);
+
   useEffect(() => {
     fetchPetsData();
-  }, [filters]);
+  }, [fetchPetsData]);
 
   useEffect(() => {
     if (error) {
       toast.error(error);
     }
   }, [error]);
-
-  const fetchPetsData = async () => {
-    try {
-      await dispatch(fetchPets(filters)).unwrap();
-    } catch (error) {
-      toast.error('Lỗi khi tải danh sách thú cưng');
-    }
-  };
 
   const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
