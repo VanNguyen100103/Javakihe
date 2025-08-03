@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../contexts/AuthContext';
 import { useAppDispatch } from '../../hook';
@@ -28,11 +28,7 @@ const ShelterAdoptionManagementPage = () => {
     }
   }, [user, isShelter, navigate]);
 
-  useEffect(() => {
-    fetchAdoptions();
-  }, []);
-
-  const fetchAdoptions = async () => {
+  const fetchAdoptions = useCallback(async () => {
     try {
       setLoading(true);
       const response = await dispatch(fetchAllAdoptions()).unwrap();
@@ -50,7 +46,11 @@ const ShelterAdoptionManagementPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch, user?.shelter?.id]);
+
+  useEffect(() => {
+    fetchAdoptions();
+  }, [fetchAdoptions]);
 
   const handleStatusUpdate = async (adoptionId, newStatus, shelterNotes = '') => {
     try {
