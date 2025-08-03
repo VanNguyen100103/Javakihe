@@ -116,7 +116,7 @@ const RemoveImagesModal = ({ pet, onSuccess, onCancel }) => {
                   <label htmlFor={`image-${index}`} className="cursor-pointer block">
                     <img
                       src={url}
-                      alt={`Pet image ${index + 1}`}
+                      alt={`Pet ${index + 1}`}
                       className="w-full h-24 object-cover rounded-lg border-2 border-gray-300 hover:border-primary-500 transition-colors duration-200"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 rounded-lg"></div>
