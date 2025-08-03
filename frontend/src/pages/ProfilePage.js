@@ -4,7 +4,7 @@ import { fetchCurrentUser, updateUserProfile, changePassword } from '../store/as
 import { useAppDispatch } from '../hook';
 import { setUser } from '../store/slice/authSlice';
 import { toast } from 'react-toastify';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const ProfilePage = () => {
