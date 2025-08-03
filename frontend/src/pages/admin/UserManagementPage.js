@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAppDispatch } from '../../hook';
 import { useUserManagement } from '../../hook';
 import { toast } from 'react-toastify';
 import { 
   FaUsers, 
-  FaSearch, 
-  FaFilter, 
   FaEdit, 
   FaTrash, 
   FaEye, 
   FaEyeSlash,
-  FaSpinner,
-  FaPlus,
-  FaDownload,
-  FaUpload
+  FaPlus
 } from 'react-icons/fa';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import SearchFilter from '../../components/common/SearchFilter';
@@ -42,9 +37,17 @@ const UserManagementPage = () => {
     sortOrder: 'desc'
   });
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      await dispatch(fetchAllUsers(filters)).unwrap();
+    } catch (error) {
+      toast.error('Lỗi khi tải danh sách người dùng');
+    }
+  }, [dispatch, filters]);
+
   useEffect(() => {
     fetchUsers();
-  }, [filters]);
+  }, [fetchUsers]);
 
   useEffect(() => {
     if (error) {
@@ -54,14 +57,6 @@ const UserManagementPage = () => {
       toast.success(message);
     }
   }, [error, message]);
-
-  const fetchUsers = async () => {
-    try {
-      await dispatch(fetchAllUsers(filters)).unwrap();
-    } catch (error) {
-      toast.error('Lỗi khi tải danh sách người dùng');
-    }
-  };
 
   const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
