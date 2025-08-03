@@ -7,7 +7,7 @@ import { FaCheck, FaTimes, FaSpinner, FaStar, FaTrophy } from 'react-icons/fa';
 
 const AdoptionTestModal = ({ isOpen, onClose, onTestComplete }) => {
   const dispatch = useAppDispatch();
-  const { testResult, isLoading } = useAppSelector(state => state.adoption);
+  const { testResult } = useAppSelector(state => state.adoption);
   const [answers, setAnswers] = useState({
     q1: null, q2: null, q3: null, q4: null, q5: null,
     q6: null, q7: null, q8: null, q9: null, q10: null
