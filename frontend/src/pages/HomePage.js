@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { usePet } from '../hook';
 import { fetchPets } from '../store/asyncAction/petAsyncAction';
 import { useAppDispatch } from '../hook';
-import { FaHeart, FaPaw, FaUsers, FaHandHoldingHeart, FaArrowRight, FaSearch, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaHeart, FaPaw, FaUsers, FaHandHoldingHeart, FaArrowRight, FaSearch, FaPhone, FaEnvelope } from 'react-icons/fa';
 import PetCard from '../components/pet/PetCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
