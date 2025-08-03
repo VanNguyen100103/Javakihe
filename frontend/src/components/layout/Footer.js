@@ -18,13 +18,13 @@ const Footer = () => {
               Chúng tôi kết nối những người yêu thú cưng với những chú thú cưng cần một mái ấm.
             </p>
             <div className="social-links">
-              <a href="#" className="social-link">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-link">
                 <FaFacebook />
               </a>
-              <a href="#" className="social-link">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="social-link">
                 <FaTwitter />
               </a>
-              <a href="#" className="social-link">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-link">
                 <FaInstagram />
               </a>
             </div>
