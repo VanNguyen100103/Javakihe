@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  springboot-app:
+    build: .
+    container_name: pawnfund
+    ports:
+      - "8887:8888"
+
+
