@@ -3,7 +3,7 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { FaPaw, FaHandHoldingHeart, FaUsers, FaChartLine, FaPlus } from 'react-icons/fa';
 
 const ShelterDashboardPage = () => {
-  const { user, isShelterStaff } = useAuthContext();
+  const { user } = useAuthContext();
 
   const stats = [
     {
