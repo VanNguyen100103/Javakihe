@@ -32,19 +32,6 @@ const ShelterUserManagementPage = () => {
     sortOrder: 'desc'
   });
 
-  useEffect(() => {
-    fetchUsers();
-  }, [filters, fetchUsers]);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-    if (message) {
-      toast.success(message);
-    }
-  }, [error, message]);
-
   const fetchUsers = useCallback(async () => {
     try {
       // Shelter staff can only view non-admin users
@@ -57,6 +44,19 @@ const ShelterUserManagementPage = () => {
       toast.error('Lỗi khi tải danh sách người dùng');
     }
   }, [dispatch, filters]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+    if (message) {
+      toast.success(message);
+    }
+  }, [error, message]);
 
   const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
