@@ -332,8 +332,8 @@ const CartPage = () => {
                     <span className="font-medium">{cartItems.length}</span>
                   </div>
                   <div className="flex justify-between">
-          
-                  
+                    <span className="text-gray-600">Tổng tiền:</span>
+                    <span className="font-medium text-primary-500">{formatPrice(calculateTotal())}</span>
                   </div>
                 </div>
 
