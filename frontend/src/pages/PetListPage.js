@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { usePet } from '../hook';
-import { fetchPets, setFilters, deletePet } from '../store/asyncAction/petAsyncAction';
-import { setCurrentPet, clearFilters } from '../store/slice/petSlice';
+import { fetchPets } from '../store/asyncAction/petAsyncAction';
 import { useAppDispatch } from '../hook';
-import { toast } from 'react-toastify';
-import { FaSearch, FaFilter, FaTimes, FaHeart, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
 import PetCard from '../components/pet/PetCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Pagination from '../components/common/Pagination';
@@ -15,9 +13,10 @@ import { useAuthContext } from '../contexts/AuthContext';
 const PetListPage = () => {
   const dispatch = useAppDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { pets, pagination, filters: reduxFilters, isLoading } = usePet();
+  const { pets, pagination, isLoading } = usePet();
   const { isAuthenticated } = useAuthContext();
   
+  const timeoutRef = useRef(null);
   const [showFilters, setShowFilters] = useState(false);
   const [localFilters, setLocalFilters] = useState({
     search: searchParams.get('search') || '',
@@ -30,19 +29,31 @@ const PetListPage = () => {
     health: searchParams.get('health') || ''
   });
 
+  const handleFilterChange = useCallback((name, value) => {
+    const newFilters = {
+      ...localFilters,
+      [name]: value
+    };
+    setLocalFilters(newFilters);
+    
+    // Update URL params
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set(name, value);
+    } else {
+      params.delete(name);
+    }
+    params.delete('page'); // Reset to first page when filter changes
+    setSearchParams(params);
+  }, [localFilters, searchParams, setSearchParams]);
+
   // Debounced search function
-  const debouncedSearch = useCallback(
-    (() => {
-      let timeoutId;
-      return (searchTerm) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          handleFilterChange('search', searchTerm);
-        }, 500); // 500ms delay
-      };
-    })(),
-    []
-  );
+  const debouncedSearch = useCallback((searchTerm) => {
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      handleFilterChange('search', searchTerm);
+    }, 500); // 500ms delay
+  }, [handleFilterChange]);
 
   // Sync URL params with local filters
   useEffect(() => {
@@ -69,7 +80,7 @@ const PetListPage = () => {
       size: 2,
       ...localFilters
     }));
-  }, [dispatch, localFilters]);
+  }, [dispatch, localFilters, searchParams]);
 
   // Load guest cart when user is not authenticated
   useEffect(() => {
@@ -81,24 +92,6 @@ const PetListPage = () => {
       }
     }
   }, [isAuthenticated, dispatch]);
-
-  const handleFilterChange = (name, value) => {
-    const newFilters = {
-      ...localFilters,
-      [name]: value
-    };
-    setLocalFilters(newFilters);
-    
-    // Update URL params
-    const params = new URLSearchParams(searchParams);
-    if (value) {
-      params.set(name, value);
-    } else {
-      params.delete(name);
-    }
-    params.delete('page'); // Reset to first page when filter changes
-    setSearchParams(params);
-  };
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -121,7 +114,6 @@ const PetListPage = () => {
     
     // Clear URL params
     setSearchParams({});
-    dispatch(clearFilters());
   };
 
   const handleRemoveFilter = (filterName) => {
