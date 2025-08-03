@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaCheckCircle, FaDownload, FaTimes, FaHandHoldingHeart, FaCalendarAlt, FaMoneyBillWave } from 'react-icons/fa';
+import { FaCheckCircle, FaDownload, FaTimes, FaHandHoldingHeart } from 'react-icons/fa';
 
 const DonationSuccess = ({ donation, onClose, onDownloadReceipt }) => {
   const formatAmount = (amount) => {
