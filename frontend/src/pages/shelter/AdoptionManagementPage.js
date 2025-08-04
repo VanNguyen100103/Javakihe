@@ -264,7 +264,7 @@ const ShelterAdoptionManagementPage = () => {
                   <div>
                     <h4 className="font-semibold text-secondary-800 mb-2">Lý do nhận nuôi:</h4>
                     <p className="text-secondary-700 bg-secondary-50 p-3 rounded-lg">
-                      {adoption.reason || adoption.message || 'Không có thông tin chi tiết về lý do nhận nuôi'}
+                      {adoption.message || 'Không có thông tin chi tiết về lý do nhận nuôi'}
                     </p>
                   </div>
                   
@@ -373,21 +373,12 @@ const ShelterAdoptionManagementPage = () => {
               <div>
                 <h3 className="font-semibold text-secondary-800 mb-3">Lý do nhận nuôi</h3>
                 <p className="text-secondary-700 bg-secondary-50 p-4 rounded-lg">
-                  {selectedAdoption.reason || selectedAdoption.message || 'Không có thông tin chi tiết về lý do nhận nuôi'}
+                  {selectedAdoption.message || 'Không có thông tin chi tiết về lý do nhận nuôi'}
                 </p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold text-secondary-800 mb-3">Thông tin bổ sung</h3>
-                  <div className="space-y-2">
-                    <p><strong>Kinh nghiệm:</strong> {selectedAdoption.experience || 'Không có'}</p>
-                    <p><strong>Điều kiện sống:</strong> {selectedAdoption.livingCondition || 'Không có'}</p>
-                    <p><strong>Số thành viên gia đình:</strong> {selectedAdoption.familyMembers || 'Không có'}</p>
-                    <p><strong>Thú cưng khác:</strong> {selectedAdoption.otherPets || 'Không có'}</p>
-                    <p><strong>Thời gian chăm sóc:</strong> {selectedAdoption.timeAvailable || 'Không có'}</p>
-                  </div>
-                </div>
+            
                 
                 <div>
                   <h3 className="font-semibold text-secondary-800 mb-3">Thông tin đơn</h3>
