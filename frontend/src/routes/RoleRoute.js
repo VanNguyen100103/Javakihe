@@ -25,6 +25,9 @@ const RoleRoute = ({
 
   // Check if user has required role
   if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+    if (userRole === 'SHELTER_STAFF' && allowedRoles.includes('SHELTER')) {
+      return children;
+    }
     return <Navigate to="/unauthorized" replace />;
   }
 
@@ -36,4 +39,4 @@ const RoleRoute = ({
   return children;
 };
 
-export default RoleRoute; 
+export default RoleRoute;

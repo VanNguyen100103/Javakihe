@@ -84,6 +84,13 @@ const RegisterPage = () => {
     }
   };
 
+  const roles = [
+    { value: 'ADOPTER', label: 'Người nhận nuôi' },
+    { value: 'DONOR', label: 'Nhà tài trợ' },
+    { value: 'SHELTER_STAFF', label: 'Nhân viên trại' },
+    { value: 'VOLUNTEER', label: 'Tình nguyện viên' }
+  ];
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -206,9 +213,9 @@ const RegisterPage = () => {
                   disabled={isSubmitting}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 disabled:bg-gray-100 appearance-none"
                 >
-                  <option value="ADOPTER">Người nhận nuôi</option>
-                  <option value="DONOR">Nhà tài trợ</option>
-                  <option value="VOLUNTEER">Tình nguyện viên</option>
+                  {roles.map(role => (
+                    <option key={role.value} value={role.value}>{role.label}</option>
+                  ))}
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,4 +337,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage; 
+export default RegisterPage;

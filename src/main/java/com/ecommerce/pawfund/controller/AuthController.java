@@ -1,8 +1,14 @@
 package com.ecommerce.pawfund.controller;
 
 import com.ecommerce.pawfund.dto.AuthRequest;
-import com.ecommerce.pawfund.dto.AuthResponse;
 import com.ecommerce.pawfund.dto.RegisterRequest;
+import com.ecommerce.pawfund.entity.RefreshToken;
+import com.ecommerce.pawfund.entity.User;
+import com.ecommerce.pawfund.entity.VerificationToken;
+import com.ecommerce.pawfund.notification.NotificationService;
+import com.ecommerce.pawfund.repository.RefreshTokenRepository;
+import com.ecommerce.pawfund.repository.UserRepository;
+import com.ecommerce.pawfund.repository.VerificationTokenRepository;
 import com.ecommerce.pawfund.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,22 +18,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import com.ecommerce.pawfund.entity.RefreshToken;
-import com.ecommerce.pawfund.entity.User;
-import com.ecommerce.pawfund.repository.RefreshTokenRepository;
-import com.ecommerce.pawfund.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.HashMap;
 import java.util.Map;
-import com.ecommerce.pawfund.entity.VerificationToken;
-import com.ecommerce.pawfund.repository.VerificationTokenRepository;
-import com.ecommerce.pawfund.notification.NotificationService;
-import java.util.UUID;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -139,10 +137,14 @@ public class AuthController {
         user.setPhone(request.getPhone());
         user.setAddress(request.getAddress());
         user.setEnabled(false); // Chưa xác thực email
-        try {
-            user.setRole(User.Role.valueOf(requestedRole));
-        } catch (Exception e) {
-            user.setRole(User.Role.ADOPTER);
+        if (requestedRole.equals("SHELTER_STAFF")) {
+            user.setRole(User.Role.SHELTER_STAFF);
+        } else {
+            try {
+                user.setRole(User.Role.valueOf(requestedRole));
+            } catch (Exception e) {
+                user.setRole(User.Role.ADOPTER);
+            }
         }
         userRepository.save(user);
         // Sinh token xác thực
@@ -170,4 +172,4 @@ public class AuthController {
         verificationTokenRepository.delete(vtOpt.get());
         return ResponseEntity.ok("Xác thực email thành công! Bạn có thể đăng nhập.");
     }
-} 
+}

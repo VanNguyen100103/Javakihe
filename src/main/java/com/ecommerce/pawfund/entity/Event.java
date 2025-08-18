@@ -1,13 +1,19 @@
 package com.ecommerce.pawfund.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "events")
 public class Event {
+    // Getters, setters, constructors
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,14 +33,19 @@ public class Event {
     private String endTime;
     private Integer maxParticipants;
 
+    @ManyToOne
+    @JoinColumn(name = "main_shelter_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"password", "refreshTokens", "verificationTokens"})
+    private User mainShelter;
+
     @ManyToMany
     @JoinTable(
-        name = "event_shelters",
+        name = "event_collaborators",
         joinColumns = @JoinColumn(name = "event_id"),
-        inverseJoinColumns = @JoinColumn(name = "shelter_id")
+        inverseJoinColumns = @JoinColumn(name = "collaborator_id")
     )
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"password", "refreshTokens", "verificationTokens"})
-    private List<User> shelters = new ArrayList<>();
+    private List<User> collaborators = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
@@ -54,6 +65,17 @@ public class Event {
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"password", "refreshTokens", "verificationTokens"})
     private List<User> donors = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "event_shelters", // Tên bảng trung gian để lưu mối quan hệ này
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "shelter_id")
+    )
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"password", "refreshTokens", "verificationTokens"})
+    private List<User> shelters = new ArrayList<>();
+
+
+
     public enum Category {
         ADOPTION, FUNDRAISING, VOLUNTEER, EDUCATION, OTHER
     }
@@ -61,44 +83,4 @@ public class Event {
     public enum Status {
         UPCOMING, ONGOING, COMPLETED, CANCELLED
     }
-
-    // Getters, setters, constructors
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    
-    public LocalDateTime getDate() { return date; }
-    public void setDate(LocalDateTime date) { this.date = date; }
-    
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
-    
-    public List<User> getShelters() { return shelters; }
-    public void setShelters(List<User> shelters) { this.shelters = shelters; }
-    
-    public List<User> getVolunteers() { return volunteers; }
-    public void setVolunteers(List<User> volunteers) { this.volunteers = volunteers; }
-
-    public List<User> getDonors() { return donors; }
-    public void setDonors(List<User> donors) { this.donors = donors; }
-    
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
-    
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
-    
-    public String getStartTime() { return startTime; }
-    public void setStartTime(String startTime) { this.startTime = startTime; }
-    
-    public String getEndTime() { return endTime; }
-    public void setEndTime(String endTime) { this.endTime = endTime; }
-    
-    public Integer getMaxParticipants() { return maxParticipants; }
-    public void setMaxParticipants(Integer maxParticipants) { this.maxParticipants = maxParticipants; }
-} 
+}

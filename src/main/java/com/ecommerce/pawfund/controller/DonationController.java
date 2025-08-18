@@ -2,33 +2,35 @@ package com.ecommerce.pawfund.controller;
 
 import com.ecommerce.pawfund.entity.Donation;
 import com.ecommerce.pawfund.notification.NotificationService;
+import com.ecommerce.pawfund.repository.UserRepository;
 import com.ecommerce.pawfund.service.inter.IDonationService;
 import com.ecommerce.pawfund.service.inter.IPayPalService;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Optional;
-import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
-import com.ecommerce.pawfund.repository.UserRepository;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/donations")
 public class DonationController {
-    @Autowired
-    private IDonationService donationService;
+    private final IDonationService donationService;
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private IPayPalService payPalService;
+    private final IPayPalService payPalService;
+
+    public DonationController(IDonationService donationService, NotificationService notificationService, UserRepository userRepository, IPayPalService payPalService) {
+        this.donationService = donationService;
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
+        this.payPalService = payPalService;
+    }
 
     @GetMapping
     public List<Donation> getAllDonations(@RequestParam(required = false) Long userId) {

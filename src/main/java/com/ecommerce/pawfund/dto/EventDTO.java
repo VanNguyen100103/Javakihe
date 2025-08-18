@@ -14,21 +14,27 @@ public class EventDTO {
     private String startTime;
     private String endTime;
     private Integer maxParticipants;
-    private List<Long> shelterIds;
-    private List<String> shelterNames;
+    private Long mainShelterId;
+    private String mainShelterName;
+    private List<Long> collaboratorIds;
+    private List<String> collaboratorNames;
     private List<Long> volunteerIds;
     private List<String> volunteerNames;
     private List<Long> donorIds;
     private List<String> donorNames;
+    private List<Long> shelterIds; // Added shelterIds
+    private List<String> shelterNames; // Added shelterNames
 
     // Constructors
     public EventDTO() {}
 
     public EventDTO(Long id, String title, String description, LocalDateTime date, String location,
                    String category, String status, String startTime, String endTime,
-                   Integer maxParticipants, List<Long> shelterIds, List<String> shelterNames, 
+                   Integer maxParticipants, Long mainShelterId, String mainShelterName,
+                   List<Long> collaboratorIds, List<String> collaboratorNames,
                    List<Long> volunteerIds, List<String> volunteerNames,
-                   List<Long> donorIds, List<String> donorNames) {
+                   List<Long> donorIds, List<String> donorNames,
+                   List<Long> shelterIds, List<String> shelterNames) { // Updated constructor
         this.id = id;
         this.title = title;
         this.description = description;
@@ -39,12 +45,16 @@ public class EventDTO {
         this.startTime = startTime;
         this.endTime = endTime;
         this.maxParticipants = maxParticipants;
-        this.shelterIds = shelterIds;
-        this.shelterNames = shelterNames;
+        this.mainShelterId = mainShelterId;
+        this.mainShelterName = mainShelterName;
+        this.collaboratorIds = collaboratorIds;
+        this.collaboratorNames = collaboratorNames;
         this.volunteerIds = volunteerIds;
         this.volunteerNames = volunteerNames;
         this.donorIds = donorIds;
         this.donorNames = donorNames;
+        this.shelterIds = shelterIds; // Updated constructor
+        this.shelterNames = shelterNames; // Updated constructor
     }
 
     // Getters and Setters
@@ -78,11 +88,17 @@ public class EventDTO {
     public Integer getMaxParticipants() { return maxParticipants; }
     public void setMaxParticipants(Integer maxParticipants) { this.maxParticipants = maxParticipants; }
 
-    public List<Long> getShelterIds() { return shelterIds; }
-    public void setShelterIds(List<Long> shelterIds) { this.shelterIds = shelterIds; }
+    public Long getMainShelterId() { return mainShelterId; }
+    public void setMainShelterId(Long mainShelterId) { this.mainShelterId = mainShelterId; }
 
-    public List<String> getShelterNames() { return shelterNames; }
-    public void setShelterNames(List<String> shelterNames) { this.shelterNames = shelterNames; }
+    public String getMainShelterName() { return mainShelterName; }
+    public void setMainShelterName(String mainShelterName) { this.mainShelterName = mainShelterName; }
+
+    public List<Long> getCollaboratorIds() { return collaboratorIds; }
+    public void setCollaboratorIds(List<Long> collaboratorIds) { this.collaboratorIds = collaboratorIds; }
+
+    public List<String> getCollaboratorNames() { return collaboratorNames; }
+    public void setCollaboratorNames(List<String> collaboratorNames) { this.collaboratorNames = collaboratorNames; }
 
     public List<Long> getVolunteerIds() { return volunteerIds; }
     public void setVolunteerIds(List<Long> volunteerIds) { this.volunteerIds = volunteerIds; }
@@ -95,5 +111,10 @@ public class EventDTO {
 
     public List<String> getDonorNames() { return donorNames; }
     public void setDonorNames(List<String> donorNames) { this.donorNames = donorNames; }
-   
-} 
+
+    public List<Long> getShelterIds() { return shelterIds; } // Getter for shelterIds
+    public void setShelterIds(List<Long> shelterIds) { this.shelterIds = shelterIds; } // Setter for shelterIds
+
+    public List<String> getShelterNames() { return shelterNames; } // Getter for shelterNames
+    public void setShelterNames(List<String> shelterNames) { this.shelterNames = shelterNames; } // Setter for shelterNames
+}
