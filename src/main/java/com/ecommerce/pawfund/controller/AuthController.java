@@ -52,7 +52,7 @@ public class AuthController {
 
     @PostMapping(value = "/login", consumes = {"application/json", "application/x-www-form-urlencoded", "multipart/form-data"})
     @Transactional
-    public ResponseEntity<?> login(@ModelAttribute AuthRequest request) {
+    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
@@ -118,7 +118,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/register", consumes = {"application/json", "application/x-www-form-urlencoded", "multipart/form-data"})
-    public ResponseEntity<?> register(@ModelAttribute RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
