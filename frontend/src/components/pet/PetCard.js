@@ -12,7 +12,7 @@ import { addItemToGuestCart } from '../../store/slice/cartSlice';
 import { toast } from 'react-toastify';
 
 const PetCard = ({ pet }) => {
-  const { userRole, isAdmin, isShelterStaff, isAdopter, isAuthenticated } = useAuthContext();
+  const { userRole, isAdmin, isAdopter, isAuthenticated } = useAuthContext();
   const dispatch = useAppDispatch();
   const [showAddImagesModal, setShowAddImagesModal] = useState(false);
   const [showRemoveImagesModal, setShowRemoveImagesModal] = useState(false);
@@ -23,13 +23,7 @@ const PetCard = ({ pet }) => {
     // Admin can manage all pets
     if (isAdmin()) return true;
     
-    // Shelter staff can only manage their own pets
-    if (isShelterStaff() && pet.shelter && userRole === 'SHELTER') {
-      // Check if the current user is the shelter that owns this pet
-      // This would need to be implemented based on how you identify the current user's shelter
-      return true; // For now, allow all shelter staff to manage pets
-    }
-    
+    // Removed Shelter staff logic
     return false;
   };
 
@@ -223,4 +217,4 @@ const PetCard = ({ pet }) => {
   );
 };
 
-export default PetCard; 
+export default PetCard;

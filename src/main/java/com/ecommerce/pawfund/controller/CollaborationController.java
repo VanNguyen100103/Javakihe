@@ -36,7 +36,7 @@ public class CollaborationController {
         this.notificationService = notificationService;
     }
 
-    @PreAuthorize("hasAnyRole('SHELTER', 'SHELTER_STAFF')")
+    @PreAuthorize("hasRole('SHELTER')")
     @PostMapping("/invite/{eventId}/{inviteeId}")
     public ResponseEntity<?> inviteShelter(
             @PathVariable Long eventId,

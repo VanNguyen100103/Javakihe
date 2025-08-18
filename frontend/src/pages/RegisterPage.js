@@ -87,7 +87,6 @@ const RegisterPage = () => {
   const roles = [
     { value: 'ADOPTER', label: 'Người nhận nuôi' },
     { value: 'DONOR', label: 'Nhà tài trợ' },
-    { value: 'SHELTER_STAFF', label: 'Nhân viên trại' },
     { value: 'VOLUNTEER', label: 'Tình nguyện viên' }
   ];
 
@@ -329,7 +328,7 @@ const RegisterPage = () => {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-white text-sm opacity-90">
-            © 2024 PawFund. Tất cả quyền được bảo lưu.
+            © 2025 PawFund. Tất cả quyền được bảo lưu.
           </p>
         </div>
       </div>

@@ -140,16 +140,6 @@ const Header = () => {
       );
     }
     
-    // Shelter staff menu items
-    if (authContext.isShelterStaff()) {
-      items.push(
-        { path: '/shelter', label: 'Shelter Dashboard', icon: FaCog },
-        { path: '/shelter/pets', label: 'Quản lý thú cưng', icon: FaPaw },
-        { path: '/shelter/adoptions', label: 'Duyệt đơn nhận nuôi', icon: FaHeart },
-        { path: '/shelter/events', label: 'Sự kiện của tôi', icon: FaCalendar }
-      );
-    }
-
     // Volunteer menu items
     if (authContext.isVolunteer()) {
       items.push(
@@ -326,4 +316,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;

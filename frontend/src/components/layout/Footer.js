@@ -90,7 +90,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="footer-bottom">
           <div className="footer-bottom-content">
-            <p>&copy; 2024 PawFund. Tất cả quyền được bảo lưu.</p>
+            <p>&copy; 2025 PawFund. Tất cả quyền được bảo lưu.</p>
             <div className="footer-bottom-links">
               <Link to="/privacy">Chính sách bảo mật</Link>
               <Link to="/terms">Điều khoản sử dụng</Link>
@@ -102,4 +102,4 @@ const Footer = () => {
   );
 };
 
-export default Footer; 
+export default Footer;

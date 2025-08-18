@@ -49,6 +49,6 @@ public class User {
     public void setLastLogin(java.time.LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
 
     public enum Role {
-        ADOPTER, DONOR, SHELTER, SHELTER_STAFF, VOLUNTEER, ADMIN
+        ADOPTER, DONOR, SHELTER, VOLUNTEER, ADMIN
     }
 }

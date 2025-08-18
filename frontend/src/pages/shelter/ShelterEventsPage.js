@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useAuthContext } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { FaCalendar, FaMapMarkerAlt, FaClock, FaUsers } from 'react-icons/fa';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { eventAPI } from '../../api/event';
 
 const ShelterEventsPage = () => {
-    const { isShelterStaff } = useAuthContext();
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        if (isShelterStaff()) {
-            loadMyEvents();
-        }
-    }, [isShelterStaff]);
+        loadMyEvents();
+    }, []);
 
     const loadMyEvents = async () => {
         setIsLoading(true);
@@ -96,17 +92,6 @@ const ShelterEventsPage = () => {
         });
     };
 
-    if (!isShelterStaff()) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Không có quyền truy cập</h1>
-                    <p className="text-gray-600">Chỉ nhân viên cứu hộ mới có quyền xem trang này.</p>
-                </div>
-            </div>
-        );
-    }
-
     if (isLoading) {
         return <LoadingSpinner />;
     }
@@ -186,4 +171,4 @@ const ShelterEventsPage = () => {
     );
 };
 
-export default ShelterEventsPage; 
+export default ShelterEventsPage;

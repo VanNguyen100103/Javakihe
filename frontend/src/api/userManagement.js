@@ -64,11 +64,6 @@ export const userManagementAPI = {
     return api.get(`/users/role/${role}?${queryParams.toString()}`);
   },
 
-  // Get shelter staff list
-  getShelterStaff: async (params = {}) => {
-    return userManagementAPI.getUsersByRole('SHELTER', params);
-  },
-
   // Get adopters list
   getAdopters: async (params = {}) => {
     return userManagementAPI.getUsersByRole('ADOPTER', params);
@@ -106,4 +101,4 @@ export const userManagementAPI = {
   bulkDeleteUsers: async (userIds) => {
     return api.post('/users/bulk/delete', { userIds });
   }
-}; 
+};

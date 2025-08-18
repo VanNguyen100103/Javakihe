@@ -52,7 +52,7 @@ public class AuthController {
 
     @PostMapping(value = "/login", consumes = {"application/json", "application/x-www-form-urlencoded", "multipart/form-data"})
     @Transactional
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<?> login(@ModelAttribute AuthRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
@@ -137,14 +137,10 @@ public class AuthController {
         user.setPhone(request.getPhone());
         user.setAddress(request.getAddress());
         user.setEnabled(false); // Chưa xác thực email
-        if (requestedRole.equals("SHELTER_STAFF")) {
-            user.setRole(User.Role.SHELTER_STAFF);
-        } else {
-            try {
-                user.setRole(User.Role.valueOf(requestedRole));
-            } catch (Exception e) {
-                user.setRole(User.Role.ADOPTER);
-            }
+        try {
+            user.setRole(User.Role.valueOf(requestedRole));
+        } catch (Exception e) {
+            user.setRole(User.Role.ADOPTER);
         }
         userRepository.save(user);
         // Sinh token xác thực

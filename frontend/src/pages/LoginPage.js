@@ -177,7 +177,7 @@ const LoginPage = () => {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-white text-sm opacity-90">
-            © 2024 PawFund. Tất cả quyền được bảo lưu.
+            © 2025 PawFund. Tất cả quyền được bảo lưu.
           </p>
         </div>
       </div>
@@ -185,4 +185,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage; 
+export default LoginPage;

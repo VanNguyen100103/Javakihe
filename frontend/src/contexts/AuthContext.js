@@ -157,9 +157,6 @@ export const AuthProvider = ({ children }) => {
   // Check if user is admin
   const isAdmin = () => userRole === 'ADMIN';
 
-  // Check if user is shelter staff
-  const isShelterStaff = () => userRole === 'SHELTER';
-
   // Check if user is volunteer
   const isVolunteer = () => userRole === 'VOLUNTEER';
 
@@ -205,7 +202,6 @@ export const AuthProvider = ({ children }) => {
     hasAnyPermission,
     hasAllPermissions,
     isAdmin,
-    isShelterStaff,
     isVolunteer,
     isAdopter,
     isDonor,
@@ -223,4 +219,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-}; 
+};
