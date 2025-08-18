@@ -120,7 +120,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/register", consumes = {"application/json", "application/x-www-form-urlencoded", "multipart/form-data"})
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@ModelAttribute RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
