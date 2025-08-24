@@ -117,13 +117,7 @@ const AdoptionPage = () => {
     <div className="adoption-page">
       <div className="page-header">
         <h1>Quản lý đơn nhận nuôi</h1>
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowCreateForm(true)}
-        >
-          <FaPlus className="icon" />
-          Tạo yêu cầu nhận nuôi
-        </button>
+        
       </div>
 
       <div className="adoption-list">
