@@ -12,18 +12,22 @@ import { addItemToGuestCart } from '../../store/slice/cartSlice';
 import { toast } from 'react-toastify';
 
 const PetCard = ({ pet }) => {
-  const { userRole, isAdmin, isAdopter, isAuthenticated } = useAuthContext();
+  const { isAdmin, isShelterStaff, isAdopter, isAuthenticated } = useAuthContext();
   const dispatch = useAppDispatch();
   const [showAddImagesModal, setShowAddImagesModal] = useState(false);
   const [showRemoveImagesModal, setShowRemoveImagesModal] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  // Check if user has permission to manage this pet
+ 
   const canManagePet = () => {
-    // Admin can manage all pets
+    
     if (isAdmin()) return true;
     
-    // Removed Shelter staff logic
+    if (isShelterStaff() && pet.shelter) {
+    
+      return true; 
+    }
+    
     return false;
   };
 
@@ -217,4 +221,4 @@ const PetCard = ({ pet }) => {
   );
 };
 
-export default PetCard;
+export default PetCard; 
