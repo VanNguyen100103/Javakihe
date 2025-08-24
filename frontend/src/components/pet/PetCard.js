@@ -12,20 +12,22 @@ import { addItemToGuestCart } from '../../store/slice/cartSlice';
 import { toast } from 'react-toastify';
 
 const PetCard = ({ pet }) => {
-  const { isAdmin, isShelterStaff, isAdopter, isAuthenticated } = useAuthContext();
+  const { userRole, isAdmin, isShelterStaff, isAdopter, isAuthenticated } = useAuthContext();
   const dispatch = useAppDispatch();
   const [showAddImagesModal, setShowAddImagesModal] = useState(false);
   const [showRemoveImagesModal, setShowRemoveImagesModal] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
- 
+  // Check if user has permission to manage this pet
   const canManagePet = () => {
-    
+    // Admin can manage all pets
     if (isAdmin()) return true;
     
-    if (isShelterStaff() && pet.shelter) {
-    
-      return true; 
+    // Shelter staff can only manage their own pets
+    if (isShelterStaff() && pet.shelter && userRole === 'SHELTER') {
+      // Check if the current user is the shelter that owns this pet
+      // This would need to be implemented based on how you identify the current user's shelter
+      return true; // For now, allow all shelter staff to manage pets
     }
     
     return false;
