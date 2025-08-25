@@ -142,65 +142,114 @@ public class EventController {
 
 
 
-    @PreAuthorize("hasRole('SHELTER')")
+    @PreAuthorize("hasAnyRole('SHELTER','VOLUNTEER','ADMIN')")
     @PostMapping(consumes = {"application/json"})
     public ResponseEntity<?> createEvent(@RequestBody Event event, Authentication authentication) {
-        try {
-            String username = authentication.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            // Set current user as main shelter
-            event.setMainShelter(user);
-            
-            // Initialize empty lists
-            event.setCollaborators(new ArrayList<>());
-            event.setVolunteers(new ArrayList<>());
-            event.setDonors(new ArrayList<>());
-
-            // Set default values if not provided
-            if (event.getTitle() == null || event.getTitle().trim().isEmpty()) {
-                event.setTitle("New Event");
-            }
-            if (event.getDescription() == null || event.getDescription().trim().isEmpty()) {
-                event.setDescription("Event Description");
-            }
-            if (event.getLocation() == null || event.getLocation().trim().isEmpty()) {
-                event.setLocation("Event Location");
-            }
-            if (event.getDate() == null) {
-                event.setDate(LocalDateTime.now().plusDays(1));
-            }
-            if (event.getCategory() == null) {
-                event.setCategory(Event.Category.ADOPTION);
-            }
-            if (event.getStatus() == null) {
-                event.setStatus(Event.Status.UPCOMING);
-            }
-            if (event.getStartTime() == null || event.getStartTime().trim().isEmpty()) {
-                event.setStartTime("09:00");
-            }
-            if (event.getEndTime() == null || event.getEndTime().trim().isEmpty()) {
-                event.setEndTime("17:00");
-            }
-            if (event.getMaxParticipants() == null) {
-                event.setMaxParticipants(100);
-            }
-
-            EventDTO savedEvent = eventService.saveAsDTO(event);
-            
-            // Send notification to main shelter
-            notificationService.notifyUser(
-                user,
-                "Event Created",
-                "You have successfully created a new event: " + event.getTitle()
-            );
-            
-            return ResponseEntity.ok(savedEvent);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error creating event: " + e.getMessage());
+        // Check if user is ADMIN
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username).orElse(null);
+        
+        if (user == null || user.getRole() != User.Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Chỉ ADMIN mới có thể tạo sự kiện");
         }
+
+        // Set default values if not provided
+        if (event.getTitle() == null || event.getTitle().trim().isEmpty()) {
+            event.setTitle("Sự kiện mới");
+        }
+        if (event.getDescription() == null || event.getDescription().trim().isEmpty()) {
+            event.setDescription("Mô tả sự kiện");
+        }
+        if (event.getLocation() == null || event.getLocation().trim().isEmpty()) {
+            event.setLocation("Địa điểm sự kiện");
+        }
+        if (event.getDate() == null) {
+            event.setDate(LocalDateTime.now().plusDays(1));
+        }
+        if (event.getCategory() == null) {
+            event.setCategory(Event.Category.ADOPTION);
+        }
+        if (event.getStatus() == null) {
+            event.setStatus(Event.Status.UPCOMING);
+        }
+        if (event.getStartTime() == null || event.getStartTime().trim().isEmpty()) {
+            event.setStartTime("09:00");
+        }
+        if (event.getEndTime() == null || event.getEndTime().trim().isEmpty()) {
+            event.setEndTime("17:00");
+        }
+        if (event.getMaxParticipants() == null) {
+            event.setMaxParticipants(100);
+        }
+
+        // Set shelters based on shelterIds if provided
+        if (event.getShelters() != null && !event.getShelters().isEmpty()) {
+            List<User> shelterUsers = new ArrayList<>();
+            for (User shelterUser : event.getShelters()) {
+                if (shelterUser.getId() != null) {
+                    User foundShelter = userRepository.findById(shelterUser.getId()).orElse(null);
+                    if (foundShelter != null && foundShelter.getRole() == User.Role.SHELTER) {
+                        shelterUsers.add(foundShelter);
+                    }
+                }
+            }
+            event.setShelters(shelterUsers);
+        } else {
+            event.setShelters(new ArrayList<>());
+        }
+
+        // Set volunteers based on volunteerIds if provided
+        if (event.getVolunteers() != null && !event.getVolunteers().isEmpty()) {
+            List<User> volunteerUsers = new ArrayList<>();
+            for (User volunteerUser : event.getVolunteers()) {
+                if (volunteerUser.getId() != null) {
+                    User foundVolunteer = userRepository.findById(volunteerUser.getId()).orElse(null);
+                    if (foundVolunteer != null && foundVolunteer.getRole() == User.Role.VOLUNTEER) {
+                        volunteerUsers.add(foundVolunteer);
+                    }
+                }
+            }
+            event.setVolunteers(volunteerUsers);
+        } else {
+            event.setVolunteers(new ArrayList<>());
+        }
+
+        // Set donors based on donorIds if provided
+        if (event.getDonors() != null && !event.getDonors().isEmpty()) {
+            List<User> donorUsers = new ArrayList<>();
+            for (User donorUser : event.getDonors()) {
+                if (donorUser.getId() != null) {
+                    User foundDonor = userRepository.findById(donorUser.getId()).orElse(null);
+                    if (foundDonor != null && foundDonor.getRole() == User.Role.DONOR) {
+                        donorUsers.add(foundDonor);
+                    }
+                }
+            }
+            event.setDonors(donorUsers);
+        } else {
+            event.setDonors(new ArrayList<>());
+        }
+
+        EventDTO savedEvent = eventService.saveAsDTO(event);
+        
+        // Send notifications to all assigned users with different timing requirements
+        try {
+            if (event.getShelters() != null && !event.getShelters().isEmpty()) {
+                notificationService.notifyShelters(event, event.getShelters());
+            }
+            if (event.getVolunteers() != null && !event.getVolunteers().isEmpty()) {
+                notificationService.notifyVolunteers(event, event.getVolunteers());
+            }
+            if (event.getDonors() != null && !event.getDonors().isEmpty()) {
+                notificationService.notifyDonors(event, event.getDonors());
+            }
+        } catch (Exception e) {
+            // Log error but don't fail the event creation
+            System.err.println("Failed to send notifications: " + e.getMessage());
+        }
+        
+        return ResponseEntity.ok(savedEvent);
     }
 
     @PreAuthorize("hasAnyRole('SHELTER','VOLUNTEER','ADMIN')")
