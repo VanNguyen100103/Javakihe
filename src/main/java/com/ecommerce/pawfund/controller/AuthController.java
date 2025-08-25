@@ -151,7 +151,7 @@ public class AuthController {
         vt.setExpiredAt(java.time.LocalDateTime.now().plusDays(1));
         verificationTokenRepository.save(vt);
         // Gửi email xác thực
-        String verifyLink = "http://localhost:8888/api/auth/verify?token=" + token;
+        String verifyLink = "https://pawnfundbackend.onrender.com/api/auth/verify?token=" + token;
         notificationService.sendEmail(user.getEmail(), "Xác thực tài khoản PawFund", "Vui lòng bấm vào link sau để xác thực tài khoản: " + verifyLink);
         return ResponseEntity.ok("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.");
     }
